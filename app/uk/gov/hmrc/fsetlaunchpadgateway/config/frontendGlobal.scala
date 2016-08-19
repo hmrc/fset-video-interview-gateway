@@ -6,14 +6,13 @@ import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import play.api.Mode._
 import play.api.mvc.Request
-import play.api.{Application, Configuration, Play}
+import play.api.{ Application, Configuration, Play }
 import play.twirl.api.Html
 import uk.gov.hmrc.crypto.ApplicationCrypto
 import uk.gov.hmrc.play.audit.filters.FrontendAuditFilter
-import uk.gov.hmrc.play.config.{AppName, ControllerConfig, RunMode}
+import uk.gov.hmrc.play.config.{ AppName, ControllerConfig, RunMode }
 import uk.gov.hmrc.play.frontend.bootstrap.DefaultFrontendGlobal
 import uk.gov.hmrc.play.http.logging.filters.FrontendLoggingFilter
-
 
 object FrontendGlobal
   extends DefaultFrontendGlobal {
@@ -32,7 +31,7 @@ object FrontendGlobal
   }
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit rh: Request[_]): Html =
-    uk.gov.hmrc.fsetlaunchpadgateway.views.html.error_template(pageTitle, heading, message)
+    Html("An error occurred")
 
   override def microserviceMetricsConfig(implicit app: Application): Option[Configuration] = app.configuration.getConfig(s"microservice.metrics")
 }

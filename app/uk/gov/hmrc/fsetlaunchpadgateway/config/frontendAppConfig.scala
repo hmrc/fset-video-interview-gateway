@@ -1,26 +1,19 @@
 package uk.gov.hmrc.fsetlaunchpadgateway
 
-import play.api.Play.{configuration, current}
+import play.api.Play.{ configuration, current }
 import uk.gov.hmrc.play.config.ServicesConfig
 
 trait AppConfig {
-  val assetsPrefix: String
-  val analyticsToken: String
-  val analyticsHost: String
-  val reportAProblemPartialUrl: String
-  val reportAProblemNonJSUrl: String
+  val launchpadApiKey: String
+  val launchpadApiBaseUrl: String
+  val launchpadApiAccountId: Int
 }
 
 object FrontendAppConfig extends AppConfig with ServicesConfig {
 
   private def loadConfig(key: String) = configuration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
 
-  private val contactHost = configuration.getString(s"contact-frontend.host").getOrElse("")
-  private val contactFormServiceIdentifier = "MyService"
-
-  override lazy val assetsPrefix = loadConfig(s"assets.url") + loadConfig(s"assets.version")
-  override lazy val analyticsToken = loadConfig(s"google-analytics.token")
-  override lazy val analyticsHost = loadConfig(s"google-analytics.host")
-  override lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
-  override lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
+  override lazy val launchpadApiKey = config("launchpad").getString("api.key").get
+  override lazy val launchpadApiBaseUrl = config("launchpad").getString("api.baseUrl").get
+  override lazy val launchpadApiAccountId = config("launchpad").getInt("api.accountId").get
 }
