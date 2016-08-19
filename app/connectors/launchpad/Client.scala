@@ -1,52 +1,28 @@
 package connectors.launchpad
 
-import connectors.launchpad.request.{ ApiRequest, GetApiRequest, PostApiRequest }
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import play.api.Logger
-import play.api.mvc.Request
-import uk.gov.hmrc.fsetlaunchpadgateway.{ FrontendAppConfig, WSHttp }
-import uk.gov.hmrc.fsetlaunchpadgateway.controllers.HelloWorld
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
-import play.api.http.Status._
-import play.api.libs.ws.{ WS, WSResponse }
-import play.api.Play.current
-
-import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration._
-import language.postfixOps
-
-object Client extends Client {
-  override val http = WS
-}
+import play.api.libs.ws.WS
+import uk.gov.hmrc.fsetlaunchpadgateway.FrontendAppConfig
 
 trait Client {
-
   val http: WS.type
 
-  // scalastyle:off
-  def sendRequest[T <: ApiRequest](apiRequest: T)(implicit request: Request[_]): WSResponse = {
-    Logger.warn("Req = " + apiRequest.requestUrl)
+  val path: String
 
-    val fut = apiRequest match {
-      case req: GetApiRequest => http.url(req.requestUrl).withHeaders(getAuthHeaders: _*).get()
-      // case req: PostApiRequest => http.url(req.requestUrl).post(req)
-    }
+  val apiBaseUrl = FrontendAppConfig.launchpadApiBaseUrl
 
-    // TODO: This await was the only way this worked from a unit test, why doesn't this work without an await?
-    val response = Await.result(fut, 30 seconds)
+  private def accountIdQueryParam(accountId: Option[Int]) = accountId.map { accId =>
+    val prefix = "?"
+    s"${prefix}accountId=${accId.toString}"
+  }.getOrElse("")
 
-    Logger.warn("Res = " + response)
-
-    if (response.status == OK) {
-      Logger.warn("RESP OK = " + response)
-    } else {
-      Logger.warn("RESP NOT NOT NOT OK = " + response)
-    }
-    response
+  protected def getRequestUrl(accountId: Option[Int]): String = {
+    val accountIdStr = accountIdQueryParam(accountId)
+    s"$apiBaseUrl/$path$accountIdStr"
   }
-  // scalastyle:on
 
   def getAuthHeaders: Seq[(String, String)] = {
     val basicAuthEncodedStr = Base64.getEncoder
@@ -60,3 +36,4 @@ trait Client {
     )
   }
 }
+
