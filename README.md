@@ -15,14 +15,14 @@ microservice {
      api {
        baseUrl = "BASEURLHERE"
        key = "KEYHERE"
-       accountId = "ACCOUNTIDHERE"
+       accountId = ACCOUNTIDHERE
      }
    }
  }
 }
 ```
 
-If you're on the FSET team you can get these values from a colleague.
+If you're on the FSET team you can get these values from a colleague. Everything marked REPLACEME or 000000000 in _reference.conf_ should feature here.
 
 ### Contributing
 
