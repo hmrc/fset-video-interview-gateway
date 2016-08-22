@@ -1,6 +1,6 @@
-package connectors.launchpad
+package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
-import connectors.launchpad.AccountClient.CreateRequest
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.AccountClient.{ CreateRequest, UpdateRequest }
 import play.api.libs.json.Json
 import play.api.libs.ws.{ WS, WSResponse }
 import play.api.Play.current
@@ -13,7 +13,16 @@ trait AccountClient extends Client {
   }
 
   def create(createRequest: CreateRequest): Future[WSResponse] = {
-    post(getPostRequestUrl, caseClassToTuples(createRequest))
+    post(getPostRequestUrl(), caseClassToTuples(createRequest))
+  }
+
+  def getSpecific(accountId: Int) = {
+    get(getGetRequestUrl(None) + "/" + accountId.toString)
+  }
+
+  def updateAccount(accountId: Int, updateRequest: UpdateRequest) = {
+    // https://www-qa.tax.service.gov.uk/fset-launchpad-gateway/callback
+    put(s"$apiBaseUrl/$path/$accountId", caseClassToTuples(updateRequest))
   }
 
   def getOwnAccountDetails = {
@@ -25,8 +34,16 @@ object AccountClient extends AccountClient {
   override val http = WS
   override val path = "accounts"
 
+  case class UpdateRequest(
+    callback_url: Option[String]
+  )
+
+  object UpdateRequest {
+    implicit val updateRequestFormat = Json.format[UpdateRequest]
+  }
+
   case class CreateRequest(
-    accountId: Option[Int],
+    account_id: Option[Int],
     company_name: String,
     sms_company_name: Option[String],
     company_comment: Option[String],

@@ -5,13 +5,16 @@ import java.io.File
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import play.api.Mode._
-import play.api.mvc.Request
+import play.api.mvc.{ EssentialFilter, Request }
 import play.api.{ Application, Configuration, Play }
 import play.twirl.api.Html
 import uk.gov.hmrc.crypto.ApplicationCrypto
 import uk.gov.hmrc.play.audit.filters.FrontendAuditFilter
 import uk.gov.hmrc.play.config.{ AppName, ControllerConfig, RunMode }
+import uk.gov.hmrc.play.filters.{ CacheControlFilter, RecoveryFilter }
+import uk.gov.hmrc.play.filters.frontend.HeadersFilter
 import uk.gov.hmrc.play.frontend.bootstrap.DefaultFrontendGlobal
+import uk.gov.hmrc.play.frontend.filters.SessionCookieCryptoFilter
 import uk.gov.hmrc.play.http.logging.filters.FrontendLoggingFilter
 
 object FrontendGlobal
@@ -20,6 +23,18 @@ object FrontendGlobal
   override val auditConnector = FrontendAuditConnector
   override val loggingFilter = LoggingFilter
   override val frontendAuditFilter = AuditFilter
+
+  // Remove CSRF filters (specify override without them)
+  override lazy val defaultFrontendFilters: Seq[EssentialFilter] = Seq(
+    metricsFilter,
+    HeadersFilter,
+    SessionCookieCryptoFilter,
+    deviceIdFilter,
+    loggingFilter,
+    frontendAuditFilter,
+    CacheControlFilter.fromConfig("caching.allowedContentTypes"),
+    RecoveryFilter
+  )
 
   override def onStart(app: Application) {
     super.onStart(app)

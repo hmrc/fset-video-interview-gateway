@@ -1,7 +1,7 @@
 
-package connectors.launchpad
+package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
-import connectors.launchpad.InterviewClient.Question
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.InterviewClient.Question
 import org.scalatestplus.play._
 import play.api.Logger
 import play.api.test.FakeRequest
@@ -25,7 +25,55 @@ class ClientSpec extends UnitSpec with OneServerPerTest {
 
       Logger.warn("Sending request...")
 
-      val theRequest = InterviewClient.create(
+      val theRequest = AccountClient.updateAccount(accountId.get, AccountClient.UpdateRequest(
+        Some("***REMOVED***")
+      ))
+
+      // TODO: This should be a mapped future
+      val response = Await.result(theRequest, 30 seconds)
+
+      Logger.warn("Response = " + response.body + "\n\n")
+
+      assert(true)
+    }
+  }
+
+}
+
+/*
+Get a specific sub-account's information
+val theRequest = AccountClient.getSpecific(accountId.get)
+ */
+/*
+Invite candidate
+ val theRequest = InterviewClient.seamlessLoginInvite(
+        accountId,
+        REPLACEINTERVIEWID,
+        InterviewClient.SeamlessLoginInviteRequest(
+          accountId,
+          "REPLACECANDIDATEID",
+          Some("CSR_CUSTOM_INVITE_REFERENCE"),
+          None,
+          None
+        )
+      )
+ */
+/*
+Create a candidate
+val theRequest = CandidateClient.create(
+        CandidateClient.CreateRequest(
+          accountId,
+          "REPLACEEMAIL",
+          Some("CUSTOM_CSR_ID_TO_KNOW_WHO_IS_WHO"),
+          "TestFirst",
+          "TestLast"
+        )
+      )
+ */
+
+/*
+Create a new interview
+val theRequest = InterviewClient.create(
         InterviewClient.CreateRequest(
           accountId,
           "API Test Interview",
@@ -50,21 +98,7 @@ class ClientSpec extends UnitSpec with OneServerPerTest {
           )
         )
       )
-
-      // TODO: This should be a mapped future
-      val response = Await.result(theRequest, 30 seconds)
-
-      Logger.warn("Response = " + response.body + "\n\n")
-
-      assert(true)
-    }
-  }
-
-}
-
-/*
-      {"account_id": REMOVED,"company_name":"CSR - Test","sms_company_name":null,"company_comment":null,"email":"***REMOVED***","first_name":"Henry","last_name":"Charge","email_employers":true,"email_applicants":true,"send_feedback_email":true,"logo_url":null,"banner_url":null,"callback_url":"","status_frequency":null,"json_callback":true,"timezone":"London"}}
-       */
+      */
 /* Create new account
       appClient.create(
       CreateRequest(
@@ -72,7 +106,7 @@ class ClientSpec extends UnitSpec with OneServerPerTest {
         "Civil Service Faststream",
         Some("Faststream"),
         None,
-        Some("***REMOVED***"),
+        Some("REPLACEMEAIL"),
         Some(true),
         Some(true),
         Some(true),

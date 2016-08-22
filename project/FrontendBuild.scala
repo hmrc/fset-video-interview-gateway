@@ -37,14 +37,10 @@ private object AppDependencies {
   private val playHealthVersion = "1.1.0"
   private val playJsonLoggerVersion = "2.1.1"
   private val frontendBootstrapVersion = "6.6.0"
-  private val govukTemplateVersion = "4.0.0"
   private val playUiVersion = "4.16.0"
   private val playPartialsVersion = "4.4.0"
   private val playAuthorisedFrontendVersion = "5.4.0"
   private val playConfigVersion = "2.1.0"
-  private val hmrcTestVersion = "1.8.0"
-  private val scalaTestVersion = "2.2.6"
-  private val pegdownVersion = "1.6.0"
   
   val compile = Seq(
     ws,
@@ -53,7 +49,6 @@ private object AppDependencies {
     "uk.gov.hmrc" %% "play-authorised-frontend" % playAuthorisedFrontendVersion,
     "uk.gov.hmrc" %% "play-config" % playConfigVersion,
     "uk.gov.hmrc" %% "play-json-logger" % playJsonLoggerVersion,
-    "uk.gov.hmrc" %% "govuk-template" % govukTemplateVersion,
     "uk.gov.hmrc" %% "play-health" % playHealthVersion,
     "uk.gov.hmrc" %% "play-ui" % playUiVersion
   )

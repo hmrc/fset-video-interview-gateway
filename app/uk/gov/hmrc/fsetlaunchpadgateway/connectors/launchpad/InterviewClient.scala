@@ -1,6 +1,6 @@
-package connectors.launchpad
+package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
-import connectors.launchpad.InterviewClient.CreateRequest
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.InterviewClient.{ CreateRequest, SeamlessLoginInviteRequest }
 import play.api.libs.json.Json
 import play.api.libs.ws.{ WS, WSResponse }
 import play.api.Play.current
@@ -12,15 +12,31 @@ trait InterviewClient extends Client {
     get(getGetRequestUrl(accountId))
   }
 
+  def seamlessLoginInvite(accountId: Option[Int], interviewId: Int, seamlessLoginInviteRequest: SeamlessLoginInviteRequest) = {
+    post(getPostRequestUrl(s"/${interviewId.toString}/seamless_login_invite"), caseClassToTuples(seamlessLoginInviteRequest))
+  }
+
   // ?questions[][text]=QUESTION+1&questions[][limit]=30&questions[][text]=QUESTION+2&questions[][limit]=60
   def create(createRequest: CreateRequest): Future[WSResponse] = {
-    post(getPostRequestUrl, caseClassToTuples(createRequest))
+    post(getPostRequestUrl(), caseClassToTuples(createRequest))
   }
 }
 
 object InterviewClient extends InterviewClient {
   override val http = WS
   override val path = "interviews"
+
+  case class SeamlessLoginInviteRequest(
+    account_id: Option[Int],
+    candidate_id: String,
+    custom_invite_id: Option[String],
+    send_email: Option[Boolean],
+    redirect_url: Option[String]
+  )
+
+  object SeamlessLoginInviteRequest {
+    implicit val seamlessLoginInviteRequestFormat = Json.format[SeamlessLoginInviteRequest]
+  }
 
   case class Question(
     text: String,
@@ -33,7 +49,7 @@ object InterviewClient extends InterviewClient {
   }
 
   case class CreateRequest(
-    accountId: Option[Int],
+    account_id: Option[Int],
     title: String,
     comments: Option[String],
     custom_interview_id: Option[String],
@@ -48,7 +64,7 @@ object InterviewClient extends InterviewClient {
     redirect_button_name: Option[String],
     show_redirect_button: Option[Boolean],
     default_language: Option[String],
-    questions: List[Question] // TODO: Serialise these question
+    questions: List[Question]
 
   ) {
     def isValid = {
