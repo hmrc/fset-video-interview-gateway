@@ -1,4 +1,5 @@
 import com.typesafe.sbt.SbtScalariform.{ ScalariformKeys, _ }
+import com.typesafe.sbt.web.Import._
 import sbt.Keys._
 import sbt.Tests.{ Group, SubProcess }
 import sbt._
@@ -44,7 +45,7 @@ trait MicroService {
       scalacOptions += "-feature"
     )
     .configs(IntegrationTest)
-    // .settings(SbtBuildInfo(): _*)
+    .settings(inConfig(IntegrationTest)(Defaults.testSettings) : _*)
     .settings(scalariformSettings: _*)
     .settings(ScalariformKeys.preferences := ScalariformKeys.preferences.value
       .setPreference(FormatXml, false)
@@ -52,12 +53,12 @@ trait MicroService {
       .setPreference(DanglingCloseParenthesis, Preserve))
     .settings(compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).toTask("").value,
       (compile in Compile) <<= (compile in Compile) dependsOn compileScalastyle)
-    //.settings(
-      // Keys.fork in IntegrationTest := false,
-      // unmanagedSourceDirectories in IntegrationTest <<= (baseDirectory in IntegrationTest)(base => Seq(base / "it")),
-      // addTestReportOption(IntegrationTest, "int-test-reports"),
-      // testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
-      // parallelExecution in IntegrationTest := false)
+    .settings(
+      Keys.fork in IntegrationTest := false,
+      unmanagedSourceDirectories in IntegrationTest <<= (baseDirectory in IntegrationTest)(base => Seq(base / "it")),
+      addTestReportOption(IntegrationTest, "int-test-reports"),
+      testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
+      parallelExecution in IntegrationTest := false)
     .settings(resolvers ++= Seq("jcenter" at hmrcRepoHost + "/content/repositories/jcenter",
        Resolver.bintrayRepo("hmrc", "releases")))
     .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
