@@ -11,7 +11,7 @@ object CallbackController extends CallbackController
 
 trait CallbackController extends FrontendController {
   def present(staticKey: String) = Action.async { implicit request =>
-    Logger.info("Received callback => " + request.body + "\n\nWith static key = " + staticKey)
+    Logger.info("Received callback => " + request.body.asText + "\n\nWith static key = " + staticKey)
 
     // 1 in 10 calls will be a 500, just to test the retry
     if (Random.shuffle(1 to 10).head == 10) {
