@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ClientSpec extends UnitSpec with OneServerPerTest {
 
   "Testing" should {
-    "Client test" in {
+    "Client test" ignore {
 
       implicit val fakeRequest = FakeRequest()
 

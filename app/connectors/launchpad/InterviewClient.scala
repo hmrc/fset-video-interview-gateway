@@ -28,6 +28,10 @@ object InterviewClient extends InterviewClient {
     preparation_time: Option[Int]
   )
 
+  object Question {
+    implicit val questionFormat = Json.format[Question]
+  }
+
   case class CreateRequest(
     accountId: Option[Int],
     title: String,
@@ -61,6 +65,5 @@ object InterviewClient extends InterviewClient {
 
   object CreateRequest {
     implicit val createRequestFormat = Json.format[CreateRequest]
-    implicit val questionFormat = Json.format[Question]
   }
 }

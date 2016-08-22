@@ -22,8 +22,7 @@ class HelloWorldControllerSpec extends UnitSpec with WithFakeApplication {
 
     "return HTML" in {
       val result = HelloWorld.present(fakeRequest)
-      contentType(result) shouldBe Some("text/html")
-      charset(result) shouldBe Some("utf-8")
+      contentType(result) shouldBe Some("text/plain")
     }
 
   }
