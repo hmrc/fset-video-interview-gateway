@@ -26,7 +26,7 @@ class ClientSpec extends UnitSpec with OneServerPerTest {
       Logger.warn("Sending request...")
 
       val theRequest = AccountClient.updateAccount(accountId.get, AccountClient.UpdateRequest(
-        Some("***REMOVED***")
+        Some("QACALLBACKURL")
       ))
 
       // TODO: This should be a mapped future
