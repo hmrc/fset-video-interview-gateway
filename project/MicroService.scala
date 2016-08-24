@@ -27,7 +27,6 @@ trait MicroService {
   lazy val playSettings : Seq[Setting[_]] = Seq.empty
 
   lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
-  val hmrcRepoHost = java.lang.System.getProperty("hmrc.repo.host", "https://***REMOVED***")
 
   lazy val microservice = Project(appName, file("."))
     .enablePlugins(Seq(play.PlayScala,SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin) ++ plugins : _*)
@@ -59,8 +58,7 @@ trait MicroService {
       addTestReportOption(IntegrationTest, "int-test-reports"),
       testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
       parallelExecution in IntegrationTest := false)
-    .settings(resolvers ++= Seq("jcenter" at hmrcRepoHost + "/content/repositories/jcenter",
-       Resolver.bintrayRepo("hmrc", "releases")))
+    .settings(resolvers ++= Seq(Resolver.bintrayRepo("hmrc", "releases")))
     .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
 }
 
