@@ -5,7 +5,7 @@ import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.InterviewClient.Que
 import org.scalatestplus.play._
 import play.api.Logger
 import play.api.test.FakeRequest
-import uk.gov.hmrc.fsetlaunchpadgateway.FrontendAppConfig
+import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Await
@@ -16,18 +16,26 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ClientSpec extends UnitSpec with OneServerPerTest {
 
   "Testing" should {
-    "Client test" ignore {
+    "Client test" in {
 
       implicit val fakeRequest = FakeRequest()
 
       val appClient = AccountClient
-      val accountId = Some(FrontendAppConfig.launchpadApiAccountId)
+      val accountId = Some(FrontendAppConfig.launchpadApiConfig.accountId)
 
       Logger.warn("Sending request...")
 
-      val theRequest = AccountClient.updateAccount(accountId.get, AccountClient.UpdateRequest(
-        Some("QACALLBACKURL")
-      ))
+      val theRequest = InterviewClient.seamlessLoginInvite(
+        accountId,
+        FrontendAppConfig.launchpadApiConfig.testInterviewId,
+        InterviewClient.SeamlessLoginInviteRequest(
+          accountId,
+          FrontendAppConfig.launchpadApiConfig.testCandidateId,
+          Some("CSR_CUSTOM_INVITE_REFERENCE_HENRI_1"),
+          None,
+          None
+        )
+      )
 
       // TODO: This should be a mapped future
       val response = Await.result(theRequest, 30 seconds)
@@ -39,20 +47,29 @@ class ClientSpec extends UnitSpec with OneServerPerTest {
   }
 
 }
-
+/*
+List all interviews (TODO: This doesn't seem to work with the sub account OR parent account), but create works fine and returns an ID
+val theRequest = InterviewClient.list(Some(1397))
+ */
+/*
+Register a new callback endpoint for an account
+ val theRequest = AccountClient.updateAccount(accountId.get, AccountClient.UpdateRequest(
+        Some(FrontendAppConfig.launchpadApiConfig.callbackUrl)
+      ))
+ */
 /*
 Get a specific sub-account's information
 val theRequest = AccountClient.getSpecific(accountId.get)
  */
 /*
 Invite candidate
- val theRequest = InterviewClient.seamlessLoginInvite(
+      val theRequest = InterviewClient.seamlessLoginInvite(
         accountId,
-        REPLACEINTERVIEWID,
+        FrontendAppConfig.launchpadApiConfig.testInterviewId,
         InterviewClient.SeamlessLoginInviteRequest(
           accountId,
-          "REPLACECANDIDATEID",
-          Some("CSR_CUSTOM_INVITE_REFERENCE"),
+          FrontendAppConfig.launchpadApiConfig.testCandidateId,
+          Some("CSR_CUSTOM_INVITE_REFERENCE_HENRI_1"),
           None,
           None
         )

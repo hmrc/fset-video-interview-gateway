@@ -30,4 +30,13 @@ object CandidateClient extends CandidateClient {
   object CreateRequest {
     implicit val createRequestFormat = Json.format[CreateRequest]
   }
+
+  case class CreateResponse(
+                             candidate_id: String,
+                             custom_candidate_id: String
+                           )
+
+  object CreateResponse {
+    implicit val createResponseFormat = Json.format[CreateResponse]
+  }
 }

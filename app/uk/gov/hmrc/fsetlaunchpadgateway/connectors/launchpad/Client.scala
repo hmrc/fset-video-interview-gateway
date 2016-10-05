@@ -6,7 +6,7 @@ import java.util.Base64
 import play.api.Logger
 import play.api.libs.ws.WS
 import play.api.Play.current
-import uk.gov.hmrc.fsetlaunchpadgateway.FrontendAppConfig
+import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.InterviewClient.Question
 
 import scala.collection.mutable
@@ -16,7 +16,7 @@ trait Client {
 
   val path: String
 
-  val apiBaseUrl = FrontendAppConfig.launchpadApiBaseUrl
+  val apiBaseUrl = FrontendAppConfig.launchpadApiConfig.baseUrl
 
   // TODO: This whole method is grimy. Done quickly for the spike, needs to perhaps do something clever with QueryStringBindable in play instead
   def caseClassToTuples(cc: Product, isList: Boolean = false): Seq[(String, String)] = {
@@ -74,7 +74,7 @@ trait Client {
 
   protected def getAuthHeaders: Seq[(String, String)] = {
     val basicAuthEncodedStr = Base64.getEncoder
-      .encodeToString(s"${FrontendAppConfig.launchpadApiKey}:passworddoesnotmatter".getBytes(StandardCharsets.UTF_8))
+      .encodeToString(s"${FrontendAppConfig.launchpadApiConfig.key}:passworddoesnotmatter".getBytes(StandardCharsets.UTF_8))
 
     Seq(
       "Authorization" -> s"Basic $basicAuthEncodedStr",

@@ -3,23 +3,36 @@ package uk.gov.hmrc.fsetlaunchpadgateway.controllers
 import play.api.Logger
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.mvc._
+import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.{ AccountClient, CandidateClient }
 
 import scala.concurrent.Future
 import scala.util.Random
 
-object CallbackController extends CallbackController
+object ApplicationController extends ApplicationController
+{
+  override val accountClient = AccountClient
+  override val candidateClient = CandidateClient
+}
 
-trait CallbackController extends FrontendController {
-  def present() = Action.async { implicit request =>
-    Logger.info("Received callback => " + request.body.asText + "\n")
+trait ApplicationController extends FrontendController {
 
-    // 1 in 10 calls will be a 500, just to test the retry
-    if (Random.shuffle(1 to 10).head == 10) {
-      Logger.info("Returned a random error on purpose")
-      Future.successful(InternalServerError("A purposeful error to test retries occurred!!!![]*$:-()foo.exception\n\n\n "))
-    } else {
-      Logger.info("Returned a success message")
-      Future.successful(Ok("Received"))
+  val accountClient: AccountClient
+  val candidateClient: CandidateClient
+
+  val launchpadAccountId = Some(FrontendAppConfig.launchpadApiConfig.accountId)
+
+  def createCandidate() = Action.async(parse.json) { implicit request =>
+    withJsonBody[CreateCandidateRequest] { cc =>
+      CandidateClient.create(
+        CandidateClient.CreateRequest(
+          launchpadAccountId,
+          cc.email,
+          Some(cc.launchpadId),
+          cc.firstName,
+          cc.lastName
+        )
+      )
     }
   }
 }
