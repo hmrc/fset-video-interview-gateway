@@ -10,7 +10,7 @@ import scala.util.Random
 object CallbackController extends CallbackController
 
 trait CallbackController extends FrontendController {
-  def present() = Action.async { implicit request =>
+  def present(): Action[AnyContent] = Action.async { implicit request =>
     Logger.info("Received callback => " + request.body.asText + "\n")
 
     // 1 in 10 calls will be a 500, just to test the retry

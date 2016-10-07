@@ -25,17 +25,9 @@ class ClientSpec extends UnitSpec with OneServerPerTest {
 
       Logger.warn("Sending request...")
 
-      val theRequest = InterviewClient.seamlessLoginInvite(
-        accountId,
-        FrontendAppConfig.launchpadApiConfig.testInterviewId,
-        InterviewClient.SeamlessLoginInviteRequest(
-          accountId,
-          FrontendAppConfig.launchpadApiConfig.testCandidateId,
-          Some("CSR_CUSTOM_INVITE_REFERENCE_HENRI_1"),
-          None,
-          None
-        )
-      )
+      val theRequest = AccountClient.updateAccount(accountId.get, AccountClient.UpdateRequest(
+        Some(FrontendAppConfig.launchpadApiConfig.callbackUrl)
+      ))
 
       // TODO: This should be a mapped future
       val response = Await.result(theRequest, 30 seconds)
@@ -49,7 +41,7 @@ class ClientSpec extends UnitSpec with OneServerPerTest {
 }
 /*
 List all interviews (TODO: This doesn't seem to work with the sub account OR parent account), but create works fine and returns an ID
-val theRequest = InterviewClient.list(Some(1397))
+val theRequest = InterviewClient.list(Some(FrontendAppConfig.launchpadApiConfig.accountId))
  */
 /*
 Register a new callback endpoint for an account
@@ -99,7 +91,7 @@ val theRequest = InterviewClient.create(
           "There will be some responsibilities, and great power will come with them",
           None,
           Some(false),
-          None,
+          Some("7"), // 7 day deadline from time of invite
           Some("This is an introductory message"),
           Some("This is a closing message"),
           Some(15),

@@ -11,22 +11,23 @@ object FrontendBuild extends Build with MicroService {
 }
 
 private object Versions {
-  val ficus         = "1.1.2"
-  val cacheClient   = "5.3.0"
-  val frontend      = "6.4.0"
-  val playConfig    = "2.0.1"
-  val playHealth    = "1.1.0"
-  val urlBuilder    = "1.0.0"
-  val httpclient    = "4.3.4"
-  val jsonLogger    = "2.1.1"
-  val passcode      = "3.2.0"
-  val scalatest     = "2.2.2"
-  val pegdown       = "1.4.2"
-  val jsoup         = "1.7.3"
-  val wiremock      = "1.57"
-  val hmrctest      = "1.4.0"
-  val scalatestplus = "1.2.0"
-  val silhouette    = "2.0.2"
+  val microserviceBootstrapVersion  = "4.2.0"
+  val ficus                         = "1.1.2"
+  val cacheClient                   = "5.3.0"
+  val frontend                      = "6.4.0"
+  val playConfig                    = "2.0.1"
+  val playHealth                    = "1.1.0"
+  val urlBuilder                    = "1.0.0"
+  val httpclient                    = "4.3.4"
+  val jsonLogger                    = "2.1.1"
+  val passcode                      = "3.2.0"
+  val scalatest                     = "2.2.2"
+  val pegdown                       = "1.4.2"
+  val jsoup                         = "1.7.3"
+  val wiremock                      = "1.57"
+  val hmrctest                      = "1.4.0"
+  val scalatestplus                 = "1.2.0"
+  val silhouette                    = "2.0.2"
 }
 
 private object AppDependencies {
@@ -44,6 +45,7 @@ private object AppDependencies {
   
   val compile = Seq(
     ws,
+    "uk.gov.hmrc" %% "microservice-bootstrap"   % microserviceBootstrapVersion,
     "uk.gov.hmrc" %% "frontend-bootstrap" % frontendBootstrapVersion,
     "uk.gov.hmrc" %% "play-partials" % playPartialsVersion,
     "uk.gov.hmrc" %% "play-authorised-frontend" % playAuthorisedFrontendVersion,
@@ -58,7 +60,7 @@ private object AppDependencies {
   }
 
   object Test {
-    def apply() = new TestDependencies {
+    def apply(): Seq[ModuleID] = new TestDependencies {
       lazy val test = Seq(
         "org.scalatest"             %% "scalatest"                % scalatest     % "test",
         "org.scalatestplus"         %% "play"                     % scalatestplus % "test",
@@ -70,7 +72,7 @@ private object AppDependencies {
     }.test
   }
 
-  def apply() = compile ++ Test()
+  def apply(): Seq[ModuleID] = compile ++ Test()
 }
 
 

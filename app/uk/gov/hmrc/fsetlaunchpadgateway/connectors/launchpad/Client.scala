@@ -1,18 +1,24 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import play.api.Logger
-import play.api.libs.ws.WS
+import play.api.libs.ws.{ WS, WSResponse }
 import play.api.Play.current
+import uk.gov.hmrc.fsetlaunchpadgateway.WSHttp
 import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.InterviewClient.Question
+import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.play.http.ws.WSHttp
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable
+import scala.concurrent.Future
 
 trait Client {
-  val http: WS.type
+  val http: WSHttp.type = WSHttp
 
   val path: String
 
@@ -57,7 +63,7 @@ trait Client {
     (result ++ additionalQuestionKeys.reverse).filter { case (k, v) => !emptyKeys.contains(k) }
   }
 
-  protected def getPostRequestUrl(optionalSuffix: String = "") = {
+  protected def getPostRequestUrl(optionalSuffix: String = ""): String = {
     s"$apiBaseUrl/$path$optionalSuffix"
   }
 
@@ -67,9 +73,9 @@ trait Client {
   }
 
   // TODO: Not every call needs accountId, perhaps refactor this to the clients that use it only
-  private def accountIdQueryParam(accountId: Option[Int]) = accountId.map { accId =>
+  private def accountIdQueryParam(accountId: Option[Int]): String = accountId.map { accId =>
     val prefix = "?"
-    s"${prefix}accountId=${accId.toString}"
+    s"${prefix}account_id=${accId.toString}"
   }.getOrElse("")
 
   protected def getAuthHeaders: Seq[(String, String)] = {
@@ -82,21 +88,38 @@ trait Client {
     )
   }
 
-  def get(url: String) = {
+  def getHeaderCarrier: HeaderCarrier = new HeaderCarrier().withExtraHeaders(getAuthHeaders: _*)
+
+  def get(url: String): Future[HttpResponse] = {
     Logger.warn(s"GETTING $url")
-    http.url(url).withHeaders(getAuthHeaders: _*).get()
+    // http.url(url).withHeaders(getAuthHeaders: _*).get()
+    implicit val hc: HeaderCarrier = getHeaderCarrier
+    http.GET(url)
   }
 
-  def post(url: String, queryParams: Seq[(String, String)]) = {
+  def post(url: String, queryParams: Seq[(String, String)]): Future[HttpResponse] = {
     Logger.warn(s"POSTING $url with $queryParams")
-    val request = http.url(url).withQueryString(queryParams: _*).withHeaders(getAuthHeaders: _*)
-    request.post("")
+    implicit val hc: HeaderCarrier = getHeaderCarrier
+    val response = http.POSTForm(url, convertQueryParamsForTx(queryParams))
+    response.map { x =>
+      print("Raw response body = " + x.body + "\n\n")
+    }
+    response
   }
 
-  def put(url: String, queryParams: Seq[(String, String)]) = {
+  def put(url: String, queryParams: Seq[(String, String)]): Future[HttpResponse] = {
     Logger.warn(s"PUTTING $url with $queryParams")
-    val request = http.url(url).withQueryString(queryParams: _*).withHeaders(getAuthHeaders: _*)
-    request.put("")
+    implicit val hc: HeaderCarrier = getHeaderCarrier
+    val qp = convertQueryParamsForTx(queryParams)
+    val response = http.PUTForm(url, convertQueryParamsForTx(queryParams))
+    // val response = http.PUT(url, qp)
+    response.map { x =>
+      print("Raw put response body = " + x.body + "\n\n")
+    }
+    response
   }
+
+  private def convertQueryParamsForTx(queryParams: Seq[(String, String)]): Map[String, Seq[String]] =
+    queryParams.map(pair => pair._1 -> Seq(pair._2))(collection.breakOut): Map[String, Seq[String]]
 }
 
