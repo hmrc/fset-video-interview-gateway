@@ -40,7 +40,7 @@ class ClientSpec extends UnitSpec with OneServerPerTest {
 
 }
 /*
-List all interviews (TODO: This doesn't seem to work with the sub account OR parent account), but create works fine and returns an ID
+List all interviews
 val theRequest = InterviewClient.list(Some(FrontendAppConfig.launchpadApiConfig.accountId))
  */
 /*
