@@ -25,14 +25,20 @@ class ClientSpec extends UnitSpec with OneServerPerTest {
 
       Logger.warn("Sending request...")
 
-      val theRequest = AccountClient.updateAccount(accountId.get, AccountClient.UpdateRequest(
-        Some(FrontendAppConfig.launchpadApiConfig.callbackUrl)
-      ))
+      val theRequest = CandidateClient.create(
+        candidate.CreateRequest(
+          accountId,
+          "foo@foo.com",
+          Some("CUSTOM_CSR_ID_TO_KNOW_WHO_IS_WHO"),
+          "TestFirst",
+          "TestLast"
+        )
+      )
 
       // TODO: This should be a mapped future
       val response = Await.result(theRequest, 30 seconds)
 
-      Logger.warn("Response = " + response.body + "\n\n")
+      Logger.warn("Response = " + response + "\n\n")
 
       assert(true)
     }

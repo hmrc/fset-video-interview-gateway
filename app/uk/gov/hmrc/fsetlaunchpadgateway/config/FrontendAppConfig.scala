@@ -16,9 +16,7 @@ object FrontendAppConfig extends FrontendAppConfig with ServicesConfig {
     key: String,
     baseUrl: String,
     accountId: Int,
-    callbackUrl: String,
-    testInterviewId: Int,
-    testCandidateId: String
+    callbackUrl: String
   )
 
   private def loadConfig(key: String) = configuration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))

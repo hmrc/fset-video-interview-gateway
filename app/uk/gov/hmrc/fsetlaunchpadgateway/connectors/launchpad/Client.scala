@@ -5,13 +5,10 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import play.api.Logger
-import play.api.libs.ws.{ WS, WSResponse }
-import play.api.Play.current
 import uk.gov.hmrc.fsetlaunchpadgateway.WSHttp
 import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
-import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.InterviewClient.Question
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.interview.Question
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
-import uk.gov.hmrc.play.http.ws.WSHttp
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable
