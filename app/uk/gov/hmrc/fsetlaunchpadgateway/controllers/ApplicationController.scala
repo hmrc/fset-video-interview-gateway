@@ -59,6 +59,5 @@ trait ApplicationController extends BaseController {
     case e: Throwable =>
       Logger.warn(s"Error communicating with launchpad: ${e.getMessage}. Stacktrace: ${e.getStackTrace}")
       InternalServerError("Error communicating with Launchpad")
-    case _ => InternalServerError
   }
 }
