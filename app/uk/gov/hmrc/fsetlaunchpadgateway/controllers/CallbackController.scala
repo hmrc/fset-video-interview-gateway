@@ -26,7 +26,7 @@ trait CallbackController extends FrontendController {
 
 // scalastyle:off
 /*
-
+  Example callback output, for reference:
   {"app":"fset-launchpad-gateway","hostname":"public-app-13-fset-launchpad-gateway","timestamp":"2016-08-22 15:23:44.331+00:00","message":"Received callback => AnyContentAsJson({\"candidate_id\":\"cnd_4bf18c2e67fbdfe122614c894403ad1a\",\"custom_candidate_id\":\"CUSTOM_CSR_ID_TO_KNOW_WHO_IS_WHO\",\"interview_id\":13755,\"custom_interview_id\":null,\"custom_invite_id\":\"CSR_CUSTOM_INVITE_REFERENCE\",\"status\":\"final\"})\n\nWith static key = foobar123123123123123123123123123","logger":"application","thread":"play-akka.actor.default-dispatcher-557","level":"INFO","application.home":"/app/fset-launchpad-gateway-0.3.0"}
  */
 // scalastyle:on
