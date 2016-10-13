@@ -1,120 +1,194 @@
 
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
-import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.InterviewClient.Question
 import org.scalatestplus.play._
-import play.api.Logger
-import play.api.test.FakeRequest
-import uk.gov.hmrc.fsetlaunchpadgateway.FrontendAppConfig
-import uk.gov.hmrc.play.test.UnitSpec
+import org.mockito.Matchers.{ eq => eqTo, _ }
+import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import play.api.libs.json.{ Json, Reads }
+import uk.gov.hmrc.fsetlaunchpadgateway.WSHttp
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ContainsSensitiveData
+import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpReads, HttpResponse }
 
-import scala.concurrent.Await
+import scala.concurrent.Future
 import scala.concurrent.duration._
-import language.postfixOps
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.postfixOps
 
-class ClientSpec extends UnitSpec with OneServerPerTest {
+case class ClientTestException(message: String, stringsToRemove: List[String]) extends SanitizedClientException(message, stringsToRemove)
 
-  "Testing" should {
-    "Client test" ignore {
+case class ClientTestRequest(
+  firstName: String,
+  lastName: String,
+  email: String
+) extends ContainsSensitiveData {
+  override def getSensitiveStrings: List[String] = List(firstName, email)
+}
 
-      implicit val fakeRequest = FakeRequest()
+case class ClientTestResponse(testKey: String) extends ContainsSensitiveData {
+  override def getSensitiveStrings: List[String] = Nil
+}
 
-      val appClient = AccountClient
-      val accountId = Some(FrontendAppConfig.launchpadApiAccountId)
+object ClientTestResponse {
+  implicit val clientTestResponseFormat = Json.format[ClientTestResponse]
+}
 
-      Logger.warn("Sending request...")
+class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with ScalaFutures {
 
-      val theRequest = AccountClient.updateAccount(accountId.get, AccountClient.UpdateRequest(
-        Some("QACALLBACKURL")
-      ))
+  "Posting a request" should {
+    val sampleRequest = ClientTestRequest("Barry", "Johnson", "foo@bar.com")
 
-      // TODO: This should be a mapped future
-      val response = Await.result(theRequest, 30 seconds)
+    "return a properly parsed response when the request is a 200" in new PostTestFixture {
+      val resp = successfulPostResponseTestClient.postWithResponseAsOrThrow[ClientTestResponse, ClientTestException](
+        sampleRequest,
+        "http://www.test.com",
+        ClientTestException
+      ).futureValue
 
-      Logger.warn("Response = " + response.body + "\n\n")
+      resp.testKey mustBe "this is a successful message"
+    }
 
-      assert(true)
+    "throw an exception when a response with no 'response' key is returned" in new PostTestFixture {
+      val ex = malformedPostResponseTestClient.postWithResponseAsOrThrow[ClientTestResponse, ClientTestException](
+        sampleRequest,
+        "http://www.test.com",
+        ClientTestException
+      ).failed.futureValue
+
+      ex mustBe a[ClientTestException]
+      ex.getMessage must include("Unexpected response from Launchpad")
+    }
+
+    "throw an exception when a response with a response key but malformed contents is returned" in new PostTestFixture {
+      val ex = malformedPostResponseContentTestClient.postWithResponseAsOrThrow[ClientTestResponse, ClientTestException](
+        sampleRequest,
+        "http://www.test.com",
+        ClientTestException
+      ).failed.futureValue
+
+      ex mustBe a[ClientTestException]
+      ex.getMessage must include("Unexpected response from Launchpad")
+    }
+
+    "throw a properly sanitised exception when an unexpected response is returned" in new PostTestFixture {
+      val ex = malformedPostResponseTestClient.postWithResponseAsOrThrow[ClientTestResponse, ClientTestException](
+        sampleRequest,
+        "http://www.test.com",
+        ClientTestException
+      ).failed.futureValue
+
+      ex mustBe a[ClientTestException]
+      ex.getMessage must include("******")
+      sampleRequest.getSensitiveStrings.foreach { sensitiveString =>
+        ex.getMessage must not include sensitiveString
+      }
+    }
+
+    "throw an exception when a non-200 response is returned" in new PostTestFixture {
+      val ex = non200TestClient.postWithResponseAsOrThrow[ClientTestResponse, ClientTestException](
+        sampleRequest,
+        "http://www.test.com",
+        ClientTestException
+      ).failed.futureValue
+
+      ex mustBe a[ClientTestException]
+      ex.getMessage must include("Received a 502 code from Launchpad")
+    }
+
+    "throw a properly sanitised exception when a non-200 response is returned" in new PostTestFixture {
+      val ex = non200TestClient.postWithResponseAsOrThrow[ClientTestResponse, ClientTestException](
+        sampleRequest,
+        "http://www.test.com",
+        ClientTestException
+      ).failed.futureValue
+
+      ex mustBe a[ClientTestException]
+      ex.getMessage must include("Received a 502 code from Launchpad")
+      ex.getMessage must include("******")
+      sampleRequest.getSensitiveStrings.foreach { sensitiveString =>
+        ex.getMessage must not include sensitiveString
+      }
     }
   }
 
+  trait PostTestFixture {
+
+    implicit val hc = new HeaderCarrier()
+
+    val wsHttpMock: WSHttp = mock[WSHttp]
+
+    lazy val successfulPostResponseTestClient = makeClient {
+      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier]())).thenReturn {
+        Future.successful(
+          HttpResponse(200, Some(
+            Json.parse(
+              """
+                | {
+                |   "response": {
+                |     "testKey": "this is a successful message"
+                |   }
+                | }
+              """.stripMargin)
+          ))
+        )
+      }
+    }
+
+    lazy val malformedPostResponseTestClient = makeClient {
+      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier]())).thenReturn {
+        Future.successful(
+          HttpResponse(200, Some(
+            Json.parse(
+              """
+                | {
+                |   "unexpected": "response"
+                | }
+              """.stripMargin)
+          ))
+        )
+      }
+    }
+
+    lazy val malformedPostResponseContentTestClient = makeClient {
+      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier]())).thenReturn {
+        Future.successful(
+          HttpResponse(200, Some(
+            Json.parse(
+              """
+                | {
+                |   "response": {
+                |     "foo": "bar"
+                |   }
+                | }
+              """.stripMargin)
+          ))
+        )
+      }
+    }
+
+    lazy val non200TestClient = makeClient {
+      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier]())).thenReturn {
+        Future.successful(
+          HttpResponse(502, Some(
+            Json.parse(
+              """
+                | {
+                |   "response": "error"
+                | }
+              """.stripMargin)
+          ))
+        )
+      }
+    }
+
+    private def makeClient(mockSetup: => Unit): Client = {
+      mockSetup
+      new Client {
+        override val http = wsHttpMock
+        override val path = "testclient"
+      }
+    }
+  }
 }
-
-/*
-Get a specific sub-account's information
-val theRequest = AccountClient.getSpecific(accountId.get)
- */
-/*
-Invite candidate
- val theRequest = InterviewClient.seamlessLoginInvite(
-        accountId,
-        REPLACEINTERVIEWID,
-        InterviewClient.SeamlessLoginInviteRequest(
-          accountId,
-          "REPLACECANDIDATEID",
-          Some("CSR_CUSTOM_INVITE_REFERENCE"),
-          None,
-          None
-        )
-      )
- */
-/*
-Create a candidate
-val theRequest = CandidateClient.create(
-        CandidateClient.CreateRequest(
-          accountId,
-          "REPLACEEMAIL",
-          Some("CUSTOM_CSR_ID_TO_KNOW_WHO_IS_WHO"),
-          "TestFirst",
-          "TestLast"
-        )
-      )
- */
-
-/*
-Create a new interview
-val theRequest = InterviewClient.create(
-        InterviewClient.CreateRequest(
-          accountId,
-          "API Test Interview",
-          Some("These are some comments"),
-          None,
-          "There will be some responsibilities, and great power will come with them",
-          None,
-          Some(false),
-          None,
-          Some("This is an introductory message"),
-          Some("This is a closing message"),
-          Some(15),
-          "http://www.bbc.co.uk",
-          Some("Special CSR Continue Button Text"),
-          None,
-          None,
-          List(
-            Question("Are you happy with this 1st question?", None, None),
-            Question("When is a lemon, no longer a lemon?", Some(5), None),
-            Question("Are you happy with this 3rd question?", Some(10), Some(15)),
-            Question("Are you happy with this 4th question?", None, Some(20))
-          )
-        )
-      )
-      */
-/* Create new account
-      appClient.create(
-      CreateRequest(
-        accountId,
-        "Civil Service Faststream",
-        Some("Faststream"),
-        None,
-        Some("REPLACEMEAIL"),
-        Some(true),
-        Some(true),
-        Some(true),
-        "http://civilserviceresourcing.havaspeople.com/uploads/1/6/7/6/16763152/517385.png",
-        None,
-        "http://NOT_IMPLEMENTED",
-        None,
-        Some(true),
-        None
-      )
-    )*/

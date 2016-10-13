@@ -1,3 +1,6 @@
 # microservice specific routes
 
-POST        /callback             uk.gov.hmrc.fsetlaunchpadgateway.controllers.CallbackController.present(staticKey: String)
+POST        /callback             uk.gov.hmrc.fsetlaunchpadgateway.controllers.CallbackController.present()
+
+POST        /faststream/register        uk.gov.hmrc.fsetlaunchpadgateway.controllers.ApplicationController.createCandidate()
+POST        /faststream/invite          uk.gov.hmrc.fsetlaunchpadgateway.controllers.ApplicationController.inviteCandidate()

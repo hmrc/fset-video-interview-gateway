@@ -1,5 +1,6 @@
 package uk.gov.hmrc.fsetlaunchpadgateway
 
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.ws.WSPutWithForms
 import uk.gov.hmrc.play.audit.http.config.LoadAuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.{ AuditConnector => Auditing }
 import uk.gov.hmrc.play.config.{ AppName, RunMode, ServicesConfig }
@@ -10,8 +11,11 @@ object FrontendAuditConnector extends Auditing with AppName {
   override lazy val auditingConfig = LoadAuditingConfig(s"auditing")
 }
 
-object WSHttp extends WSGet with WSPut with WSPost with WSDelete with AppName with RunMode {
+object WSHttp extends WSHttp {
   override val hooks = NoneRequired
+}
+
+trait WSHttp extends WSGet with WSPutWithForms with WSPost with WSDelete with AppName with RunMode {
 }
 
 object FrontendAuthConnector extends AuthConnector with ServicesConfig {

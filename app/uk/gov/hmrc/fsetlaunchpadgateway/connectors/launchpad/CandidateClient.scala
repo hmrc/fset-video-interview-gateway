@@ -1,33 +1,22 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
-import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.CandidateClient.CreateRequest
-import play.api.libs.json.Json
-import play.api.libs.ws.{ WS, WSResponse }
-import play.api.Play.current
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.CandidateClient.CreateException
+import play.api.libs.json.Format
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.candidate.{ CreateRequest, CreateResponse }
 
 import scala.concurrent.Future
 
-trait CandidateClient extends Client {
-  def create(createRequest: CreateRequest): Future[WSResponse] = {
-    post(getPostRequestUrl(), caseClassToTuples(createRequest))
-  }
-}
-
 object CandidateClient extends CandidateClient {
-  override val http = WS
   override val path = "candidates"
 
-  case class CreateRequest(
-    account_id: Option[Int],
-    email: String,
-    custom_candidate_id: Option[String],
-    first_name: String,
-    last_name: String
-  ) {
-    def isValid = true
-  }
+  case class CreateException(message: String, stringsToRemove: List[String])
+    extends SanitizedClientException(message, stringsToRemove)
+}
 
-  object CreateRequest {
-    implicit val createRequestFormat = Json.format[CreateRequest]
-  }
+trait CandidateClient extends Client {
+  def create(createRequest: CreateRequest)(implicit format: Format[CreateResponse]): Future[CreateResponse] =
+    postWithResponseAsOrThrow[CreateResponse, CreateException](
+      createRequest, getPostRequestUrl(), CreateException
+    )
 }
