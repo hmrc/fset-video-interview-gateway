@@ -39,7 +39,18 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
 
   "Posting a request" should {
     val sampleRequest = ClientTestRequest("Barry", "Johnson", "foo@bar.com")
-    "Throw an exception when a response with no 'response' key is returned" in new PostTestFixture {
+
+    "return a properly parsed response when the request is a 200" in new PostTestFixture {
+      val resp = successfulPostResponseTestClient.postWithResponseAsOrThrow[ClientTestResponse, ClientTestException](
+        sampleRequest,
+        "http://www.test.com",
+        ClientTestException
+      ).futureValue
+
+      resp.testKey mustBe "this is a successful message"
+    }
+
+    "throw an exception when a response with no 'response' key is returned" in new PostTestFixture {
       val ex = malformedPostResponseTestClient.postWithResponseAsOrThrow[ClientTestResponse, ClientTestException](
         sampleRequest,
         "http://www.test.com",
@@ -50,7 +61,7 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
       ex.getMessage must include("Unexpected response from Launchpad")
     }
 
-    "Throw an exception when a response with a response key but malformed contents is returned" in new PostTestFixture {
+    "throw an exception when a response with a response key but malformed contents is returned" in new PostTestFixture {
       val ex = malformedPostResponseContentTestClient.postWithResponseAsOrThrow[ClientTestResponse, ClientTestException](
         sampleRequest,
         "http://www.test.com",
@@ -61,7 +72,7 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
       ex.getMessage must include("Unexpected response from Launchpad")
     }
 
-    "Throw a properly sanitised exception when an unexpected response is returned" in new PostTestFixture {
+    "throw a properly sanitised exception when an unexpected response is returned" in new PostTestFixture {
       val ex = malformedPostResponseTestClient.postWithResponseAsOrThrow[ClientTestResponse, ClientTestException](
         sampleRequest,
         "http://www.test.com",
@@ -75,7 +86,7 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
       }
     }
 
-    "Throw an exception when a non-200 response is returned" in new PostTestFixture {
+    "throw an exception when a non-200 response is returned" in new PostTestFixture {
       val ex = non200TestClient.postWithResponseAsOrThrow[ClientTestResponse, ClientTestException](
         sampleRequest,
         "http://www.test.com",
@@ -86,9 +97,9 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
       ex.getMessage must include("Received a 502 code from Launchpad")
     }
 
-    "Throw a properly sanitised exception when a non-200 response is returned" in new PostTestFixture {
+    "throw a properly sanitised exception when a non-200 response is returned" in new PostTestFixture {
       val ex = non200TestClient.postWithResponseAsOrThrow[ClientTestResponse, ClientTestException](
-        ClientTestRequest("Barry", "Johnson", "foo@bar.com"),
+        sampleRequest,
         "http://www.test.com",
         ClientTestException
       ).failed.futureValue
@@ -107,6 +118,23 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
     implicit val hc = new HeaderCarrier()
 
     val wsHttpMock: WSHttp = mock[WSHttp]
+
+    lazy val successfulPostResponseTestClient = makeClient {
+      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier]())).thenReturn {
+        Future.successful(
+          HttpResponse(200, Some(
+            Json.parse(
+              """
+                | {
+                |   "response": {
+                |     "testKey": "this is a successful message"
+                |   }
+                | }
+              """.stripMargin)
+          ))
+        )
+      }
+    }
 
     lazy val malformedPostResponseTestClient = makeClient {
       when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier]())).thenReturn {
