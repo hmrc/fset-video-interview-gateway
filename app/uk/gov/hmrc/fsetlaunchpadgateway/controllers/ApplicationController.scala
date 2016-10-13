@@ -6,7 +6,7 @@ import play.api.mvc._
 import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.{ AccountClient, CandidateClient, InterviewClient }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects._
-import uk.gov.hmrc.fsetlaunchpadgateway.models.commands.{ CreateCandidateRequest, InviteCandidateRequest }
+import uk.gov.hmrc.fsetlaunchpadgateway.models.commands._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,7 +35,9 @@ trait ApplicationController extends BaseController {
           cc.firstName,
           cc.lastName
         )
-      ).map(createResponse => Ok(Json.toJson(createResponse))).recover(recoverFromBadCall)
+      ).map { createResponse =>
+          Ok(Json.toJson(CreateCandidateResponse.fromResponse(createResponse)))
+        }.recover(recoverFromBadCall)
     }
   }
 
@@ -51,7 +53,9 @@ trait ApplicationController extends BaseController {
           send_email = None,
           redirect_url = Some(ic.redirectUrl)
         )
-      ).map(seamlessLoginInviteResponse => Ok(Json.toJson(seamlessLoginInviteResponse))).recover(recoverFromBadCall)
+      ).map { seamlessLoginInviteResponse =>
+          Ok(Json.toJson(InviteCandidateResponse.fromResponse(seamlessLoginInviteResponse)))
+        }.recover(recoverFromBadCall)
     }
   }
 

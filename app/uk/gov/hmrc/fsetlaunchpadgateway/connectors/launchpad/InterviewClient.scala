@@ -20,12 +20,13 @@ trait InterviewClient extends Client {
   }
 
   def seamlessLoginInvite(accountId: Option[Int], interviewId: Int,
-    seamlessLoginInviteRequest: SeamlessLoginInviteRequest): Future[SeamlessLoginInviteResponse] =
+    seamlessLoginInviteRequest: SeamlessLoginInviteRequest): Future[SeamlessLoginInviteResponse] = {
     postWithResponseAsOrThrow[SeamlessLoginInviteResponse, InviteException](
       seamlessLoginInviteRequest,
       getPostRequestUrl(s"/${interviewId.toString}/seamless_login_invite"),
       InviteException
     )
+  }
 
   // TODO: Remove this utility method before launch
   def create(createRequest: CreateRequest): Future[HttpResponse] = {
