@@ -9,6 +9,7 @@ object AccountClient extends AccountClient {
   override val path = "accounts"
 }
 
+// TODO: Remove this utility account client before launch
 trait AccountClient extends Client {
   def list(accountId: Option[Int]): Future[HttpResponse] = {
     get(getGetRequestUrl(accountId))

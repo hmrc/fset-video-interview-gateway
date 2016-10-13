@@ -1,21 +1,34 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
-import java.net.URLEncoder
+import play.api.http.Status._
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import play.api.Logger
+import play.api.libs.json.Format
 import uk.gov.hmrc.fsetlaunchpadgateway.WSHttp
 import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ContainsSensitiveData
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.interview.Question
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable
 import scala.concurrent.Future
+import scala.util.{ Failure, Success, Try }
+
+object Client {
+  abstract class SanitizedClientException(message: String, stringsToRemove: List[String])
+    extends Exception(sanitizeLog(message, stringsToRemove))
+
+  def sanitizeLog(stringToSanitize: String, stringsToRemove: List[String]): String = {
+    stringsToRemove.foldLeft(stringToSanitize)(_.replace(_, "******"))
+  }
+}
 
 trait Client {
-  val http: WSHttp.type = WSHttp
+  val http: WSHttp = WSHttp
 
   val path: String
 
@@ -85,35 +98,43 @@ trait Client {
     )
   }
 
+  def postWithResponseAsOrThrow[R <: ContainsSensitiveData, E <: SanitizedClientException](
+    request: Product with ContainsSensitiveData,
+    postUrl: String,
+    exceptionOnFailure: => (String, List[String]) => E
+  )(implicit jsonFormat: Format[R]): Future[R] = {
+
+    post(postUrl, caseClassToTuples(request)).map { response =>
+      if (response.status == OK) {
+        Try(response.json.\\("response").head.as[R]) match {
+          case Success(resp) => resp
+          case Failure(ex) => throw exceptionOnFailure(s"Unexpected response from Launchpad when calling $postUrl. Body was:" +
+            s"${response.body}. Request: $request", request.getSensitiveStrings)
+        }
+      } else {
+        throw exceptionOnFailure(s"Received a ${response.status} code from Launchpad when calling $postUrl. " +
+          s"Response: ${response.body}. Request: $request", request.getSensitiveStrings)
+      }
+    }
+  }
+
   def getHeaderCarrier: HeaderCarrier = new HeaderCarrier().withExtraHeaders(getAuthHeaders: _*)
 
   def get(url: String): Future[HttpResponse] = {
-    Logger.warn(s"GETTING $url")
     // http.url(url).withHeaders(getAuthHeaders: _*).get()
     implicit val hc: HeaderCarrier = getHeaderCarrier
     http.GET(url)
   }
 
   def post(url: String, queryParams: Seq[(String, String)]): Future[HttpResponse] = {
-    Logger.warn(s"POSTING $url with $queryParams")
     implicit val hc: HeaderCarrier = getHeaderCarrier
-    val response = http.POSTForm(url, convertQueryParamsForTx(queryParams))
-    response.map { x =>
-      print("Raw response body = " + x.body + "\n\n")
-    }
-    response
+    http.POSTForm(url, convertQueryParamsForTx(queryParams))
   }
 
   def put(url: String, queryParams: Seq[(String, String)]): Future[HttpResponse] = {
-    Logger.warn(s"PUTTING $url with $queryParams")
     implicit val hc: HeaderCarrier = getHeaderCarrier
     val qp = convertQueryParamsForTx(queryParams)
-    val response = http.PUTForm(url, convertQueryParamsForTx(queryParams))
-    // val response = http.PUT(url, qp)
-    response.map { x =>
-      print("Raw put response body = " + x.body + "\n\n")
-    }
-    response
+    http.PUTForm(url, convertQueryParamsForTx(queryParams))
   }
 
   private def convertQueryParamsForTx(queryParams: Seq[(String, String)]): Map[String, Seq[String]] =
