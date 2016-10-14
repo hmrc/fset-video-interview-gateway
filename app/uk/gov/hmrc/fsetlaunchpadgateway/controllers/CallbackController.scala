@@ -14,9 +14,9 @@ trait CallbackController extends FrontendController {
     Logger.info("Received callback => " + request.body.asText.getOrElse("No callback body detected!") + "\n")
 
     Logger.debug(s"*** Content-type: ${request.contentType}" +
-    s"*** Headers: ${request.headers}" +
-    s"*** Body: ${request.body}" +
-    s"*** Query string: ${request.rawQueryString}")
+      s"*** Headers: ${request.headers}" +
+      s"*** Body: ${request.body}" +
+      s"*** Query string: ${request.rawQueryString}")
 
     // 1 in 10 calls will be a 500, just to test the retry
     if (Random.shuffle(1 to 10).head == 10) {

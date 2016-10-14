@@ -3,7 +3,7 @@ package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ac
 import play.api.libs.json.Json
 
 case class UpdateRequest(
-  status_frequency: Option[String]
+  callback_url: Option[String]
 )
 
 object UpdateRequest {

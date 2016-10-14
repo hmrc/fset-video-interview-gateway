@@ -5,6 +5,7 @@ import org.scalatestplus.play._
 import play.api.Logger
 import play.api.test.FakeRequest
 import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.account.{ CreateRequest, UpdateRequest }
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Await
@@ -25,20 +26,14 @@ class ManualClient extends UnitSpec with OneServerPerTest {
 
       Logger.warn("Sending request...")
 
-      val theRequest = CandidateClient.create(
-        exchangeobjects.candidate.CreateRequest(
-          accountId,
-          "foo@foo.com",
-          Some("CUSTOM_CSR_ID_TO_KNOW_WHO_IS_WHO"),
-          "TestFirst",
-          "TestLast"
-        )
-      )
+      val theRequest = AccountClient.updateAccount(accountId.get, UpdateRequest(
+        Some(FrontendAppConfig.launchpadApiConfig.callbackUrl)
+      ))
 
       // TODO: This should be a mapped future
       val response = Await.result(theRequest, 30 seconds)
 
-      Logger.warn("Response = " + response + "\n\n")
+      Logger.warn("Response = " + response.body + "\n\n")
 
       assert(true)
     }
@@ -114,22 +109,20 @@ val theRequest = InterviewClient.create(
         )
       )
       */
-/* Create new account
-      appClient.create(
-      CreateRequest(
-        accountId,
-        "Civil Service Faststream",
-        Some("Faststream"),
-        None,
-        Some("REPLACEMEAIL"),
-        Some(true),
-        Some(true),
-        Some(true),
-        "http://civilserviceresourcing.havaspeople.com/uploads/1/6/7/6/16763152/517385.png",
-        None,
-        "http://NOT_IMPLEMENTED",
-        None,
-        Some(true),
-        None
-      )
-    )*/
+/* val theRequest = appClient.create(
+CreateRequest(
+accountId,
+"Civil Service Faststream",
+Some("Faststream"),
+None,
+Some("REPLACEMEAIL"),
+Some(true),
+Some(true),
+Some(true),
+"http://civilserviceresourcing.havaspeople.com/uploads/1/6/7/6/16763152/517385.png",
+None,
+"https://www-staging.tax.service.gov.uk/fset-launchpad-gateway/callback",
+None,
+Some(true),
+None
+)) */
