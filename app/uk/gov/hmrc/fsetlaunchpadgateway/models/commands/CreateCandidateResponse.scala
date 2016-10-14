@@ -5,7 +5,7 @@ import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.can
 
 case class CreateCandidateResponse(
   candidateId: String,
-  customCandidateIid: String
+  customCandidateId: String
 )
 
 object CreateCandidateResponse {

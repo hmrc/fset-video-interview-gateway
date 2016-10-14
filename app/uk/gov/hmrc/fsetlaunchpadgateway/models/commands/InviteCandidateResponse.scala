@@ -4,7 +4,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.interview.{ SeamlessLoginInviteResponse, SeamlessLoginLink }
 
 case class InviteCandidateResponse(
-  custom_invite_id: String, candidate_id: String, custom_candidate_id: String,
+  customInviteId: String, candidateId: String, customCandidateId: String,
   testUrl: String, deadline: String
 )
 
