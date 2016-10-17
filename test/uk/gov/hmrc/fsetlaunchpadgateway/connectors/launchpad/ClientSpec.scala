@@ -8,7 +8,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{ Json, Reads }
-import uk.gov.hmrc.fsetlaunchpadgateway.WSHttp
+import uk.gov.hmrc.fsetlaunchpadgateway.config.WSHttp
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ContainsSensitiveData
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpReads, HttpResponse }

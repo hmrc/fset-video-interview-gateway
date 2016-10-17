@@ -3,7 +3,7 @@ package uk.gov.hmrc.fsetlaunchpadgateway.controllers
 import play.api.Logger
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.mvc._
-import uk.gov.hmrc.fsetlaunchpadgateway.WSHttp
+import uk.gov.hmrc.fsetlaunchpadgateway.config.WSHttp
 import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig.faststreamApiConfig
 
 import scala.concurrent.Future

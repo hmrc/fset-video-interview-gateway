@@ -42,6 +42,7 @@ private object AppDependencies {
   private val playPartialsVersion = "4.4.0"
   private val playAuthorisedFrontendVersion = "5.4.0"
   private val playConfigVersion = "2.1.0"
+  private val playWhitelist = "1.1.0"
   
   val compile = Seq(
     ws,
@@ -52,7 +53,8 @@ private object AppDependencies {
     "uk.gov.hmrc" %% "play-config" % playConfigVersion,
     "uk.gov.hmrc" %% "play-json-logger" % playJsonLoggerVersion,
     "uk.gov.hmrc" %% "play-health" % playHealthVersion,
-    "uk.gov.hmrc" %% "play-ui" % playUiVersion
+    "uk.gov.hmrc" %% "play-ui" % playUiVersion,
+    "uk.gov.hmrc" %% "play-whitelist-filter" % playWhitelist
   )
 
   trait TestDependencies {
