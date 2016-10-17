@@ -3,7 +3,7 @@ package uk.gov.hmrc.fsetlaunchpadgateway.controllers
 import play.api.Logger
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.mvc._
-import uk.gov.hmrc.fsetlaunchpadgateway.WSHttp
+import uk.gov.hmrc.fsetlaunchpadgateway.config.WSHttp
 import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig.faststreamApiConfig
 
 import scala.concurrent.Future
@@ -30,6 +30,7 @@ trait CallbackController extends FrontendController {
     }
   }
 
+  // TODO: Remove this after successful production deploy/test
   def commsTest(): Action[AnyContent] = Action.async { implicit request =>
     WSHttp.GET(s"${faststreamApiConfig.url.host}/ping/ping").map { response =>
       Logger.debug(s"Response from faststream status = ${response.status}, body = ${response.body}")

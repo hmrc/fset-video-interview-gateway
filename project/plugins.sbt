@@ -5,6 +5,8 @@ resolvers += Resolver.url("hmrc-sbt-plugin-releases",
 
 resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/"
 
+resolvers += Resolver.bintrayRepo("hmrc", "releases")
+
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.3.10")
 
 addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "1.4.0")
