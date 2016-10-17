@@ -3,6 +3,8 @@ package uk.gov.hmrc.fsetlaunchpadgateway.controllers
 import play.api.Logger
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.mvc._
+import uk.gov.hmrc.fsetlaunchpadgateway.WSHttp
+import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig.faststreamApiConfig
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -25,6 +27,15 @@ trait CallbackController extends FrontendController {
     } else {
       Logger.info("Returned a success message")
       Future.successful(Ok("Received"))
+    }
+  }
+
+  def commsTest(): Action[AnyContent] = Action.async { implicit request =>
+    WSHttp.GET(s"${faststreamApiConfig.url.host}/ping/ping").map { response =>
+      Logger.debug(s"Response from faststream status = ${response.status}, body = ${response.body}")
+      Ok
+    }.recover {
+      case ex => Logger.debug(s"Exception: " + ex); Ok
     }
   }
 }
