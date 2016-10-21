@@ -33,10 +33,10 @@ trait CallbackController extends FrontendController {
   // TODO: Remove this after successful production deploy/test
   def commsTest(): Action[AnyContent] = Action.async { implicit request =>
     WSHttp.GET(s"${faststreamApiConfig.url.host}/ping/ping").map { response =>
-      Logger.debug(s"Response from faststream status = ${response.status}, body = ${response.body}")
+      Logger.warn(s"Response from faststream status = ${response.status}, body = ${response.body}")
       Ok
     }.recover {
-      case ex => Logger.debug(s"Exception: " + ex); Ok
+      case ex => Logger.warn(s"Exception: " + ex); Ok
     }
   }
 }
