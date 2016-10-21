@@ -13,7 +13,7 @@ object CallbackController extends CallbackController
 
 trait CallbackController extends FrontendController {
   def present(): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info("Received callback => " + request.body.asText.getOrElse("No callback body detected!") + "\n")
+    Logger.info("Received callback => " + request.body.asJson.getOrElse("No callback body detected!").toString + "\n")
 
     Logger.debug(s"*** Content-type: ${request.contentType}" +
       s"*** Headers: ${request.headers}" +
