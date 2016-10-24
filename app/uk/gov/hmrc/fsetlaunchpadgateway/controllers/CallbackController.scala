@@ -23,7 +23,7 @@ trait CallbackController extends FrontendController {
     request.body.asJson.map { contentAsJson =>
       Logger.debug(s"Callback received with body: $contentAsJson")
 
-      val status = (contentAsJson \ "status").toString
+      val status = (contentAsJson \ "status").as[String]
 
       status match {
         case "setup_process" => Logger.debug("setup_process callback received!")
