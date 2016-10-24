@@ -37,7 +37,7 @@ class WhitelistFilterConfigSpec extends PlaySpec with OneAppPerTest {
         val request = FakeRequest(POST, "/fset-launchpad-gateway/faststream/callback").withHeaders("True-Client-IP" -> "11.22.33.44")
         val Some(result) = route(app, request)
 
-        assert(status(result) == OK || status(result) == INTERNAL_SERVER_ERROR) // TODO: When callback endpoint is not being tested remove 500
+        status(result) mustBe (BAD_REQUEST)
       }
 
       "coming from a IP NOT in the white-list and not with a white-listed path must be redirected" in {
@@ -59,7 +59,7 @@ class WhitelistFilterConfigSpec extends PlaySpec with OneAppPerTest {
         val request = FakeRequest(POST, "/fset-launchpad-gateway/faststream/callback")
         val Some(result) = route(app, request)
 
-        assert(status(result) == OK || status(result) == INTERNAL_SERVER_ERROR) // TODO: When callback endpoint is not being tested remove 500
+        status(result) mustBe (BAD_REQUEST)
       }
     }
   }
