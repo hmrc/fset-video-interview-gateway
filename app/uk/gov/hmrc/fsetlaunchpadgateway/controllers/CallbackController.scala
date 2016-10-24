@@ -3,51 +3,60 @@ package uk.gov.hmrc.fsetlaunchpadgateway.controllers
 import play.api.Logger
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.mvc._
-import uk.gov.hmrc.fsetlaunchpadgateway.config.WSHttp
-import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig.faststreamApiConfig
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback._
 
 import scala.concurrent.Future
-import scala.util.Random
+import scala.util.{ Failure, Random, Success, Try }
 
 object CallbackController extends CallbackController
 
 trait CallbackController extends FrontendController {
+
   def present(): Action[AnyContent] = Action.async { implicit request =>
     Logger.info("Received callback => " + request.body.asJson.getOrElse("No callback body detected!").toString + "\n")
 
-    Logger.debug(s"*** Content-type: ${request.contentType}" +
-      s"*** Headers: ${request.headers}" +
-      s"*** Body: ${request.body}" +
-      s"*** Query string: ${request.rawQueryString}")
+    Logger.debug(s"*** Content-type: ${request.contentType}\n" +
+      s"*** Headers: ${request.headers}\n" +
+      s"*** Body: ${request.body}\n" +
+      s"*** Query string: ${request.rawQueryString}\n")
 
     request.body.asJson.map { contentAsJson =>
       Logger.debug(s"Callback received with body: $contentAsJson")
 
-      val status = (contentAsJson \ "status").as[String]
+      val status = (contentAsJson \ "status").asOpt[String]
 
-      status match {
-        case "setup_process" => Logger.debug("setup_process callback received!")
-        case "view_practice_question" => Logger.debug("view_practice_question callback received!")
-        case "question" => Logger.debug("question callback received!")
-        case "final" => Logger.debug("final callback received!")
-        case "finished" => Logger.debug("finished callback received!")
-        case _ => Logger.warn(s"Unknown callback type received! Status was $status, JSON body was $contentAsJson")
+      Try(status match {
+        case Some("setup_process") =>
+          Logger.debug("setup_process callback received!")
+          val parsed = contentAsJson.as[SetupProcessCallback]
+          Future.successful(Ok("Received"))
+        case Some("view_practice_question") =>
+          Logger.debug("view_practice_question callback received!")
+          val parsed = contentAsJson.as[ViewPracticeQuestionCallback]
+          Future.successful(Ok("Received"))
+        case Some("question") =>
+          Logger.debug("question callback received!")
+          val parsed = contentAsJson.as[QuestionCallback]
+          Logger.debug("Question parsed => " + parsed)
+          Future.successful(Ok("Received"))
+        case Some("final") =>
+          val parsed = contentAsJson.as[FinalCallback]
+          Logger.debug("final callback received!")
+          Future.successful(Ok("Received"))
+        case Some("finished") =>
+          val parsed = contentAsJson.as[FinishedCallback]
+          Logger.debug("finished callback received!")
+          Future.successful(Ok("Received"))
+        case _ =>
+          Logger.warn(s"Unknown callback type received! Status was $status, JSON body was $contentAsJson")
+          Future.successful(BadRequest("Status was not recognised"))
+      }) match {
+        case Success(result) => result
+        case Failure(ex) => Future.successful(BadRequest("Request was malformed"))
       }
-
-      Future.successful(Ok("Received"))
     }.getOrElse {
       Logger.warn(s"Callback received with invalid JSON or empty body received. Raw request: ${request.body}")
       Future.successful(BadRequest("Callback body was empty"))
-    }
-  }
-
-  // TODO: Remove this after successful production deploy/test
-  def commsTest(): Action[AnyContent] = Action.async { implicit request =>
-    WSHttp.GET(s"${faststreamApiConfig.url.host}/ping/ping").map { response =>
-      Logger.warn(s"Response from faststream status = ${response.status}, body = ${response.body}")
-      Ok
-    }.recover {
-      case ex => Logger.warn(s"Exception: " + ex); Ok
     }
   }
 }
