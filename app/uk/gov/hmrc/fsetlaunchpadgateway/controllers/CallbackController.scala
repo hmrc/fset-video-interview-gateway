@@ -5,6 +5,7 @@ import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.mvc._
 import uk.gov.hmrc.fsetlaunchpadgateway.config.WSHttp
 import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig.faststreamApiConfig
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback.QuestionCallback
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -26,15 +27,27 @@ trait CallbackController extends FrontendController {
       val status = (contentAsJson \ "status").as[String]
 
       status match {
-        case "setup_process" => Logger.debug("setup_process callback received!")
-        case "view_practice_question" => Logger.debug("view_practice_question callback received!")
-        case "question" => Logger.debug("question callback received!")
-        case "final" => Logger.debug("final callback received!")
-        case "finished" => Logger.debug("finished callback received!")
-        case _ => Logger.warn(s"Unknown callback type received! Status was $status, JSON body was $contentAsJson")
+        case "setup_process" =>
+          Logger.debug("setup_process callback received!")
+          Future.successful(Ok("Received"))
+        case "view_practice_question" =>
+          Logger.debug("view_practice_question callback received!")
+          Future.successful(Ok("Received"))
+        case "question" =>
+          Logger.debug("question callback received!")
+          val parsed = contentAsJson.as[QuestionCallback]
+          Logger.debug("Question parsed => " + parsed)
+          Future.successful(Ok("Received"))
+        case "final" =>
+          Logger.debug("final callback received!")
+          Future.successful(Ok("Received"))
+        case "finished" =>
+          Logger.debug("finished callback received!")
+          Future.successful(Ok("Received"))
+        case _ =>
+          Logger.warn(s"Unknown callback type received! Status was $status, JSON body was $contentAsJson")
+          Future.successful(BadRequest("Status was not recognised"))
       }
-
-      Future.successful(Ok("Received"))
     }.getOrElse {
       Logger.warn(s"Callback received with invalid JSON or empty body received. Raw request: ${request.body}")
       Future.successful(BadRequest("Callback body was empty"))
