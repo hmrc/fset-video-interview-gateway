@@ -20,13 +20,24 @@ trait CallbackController extends FrontendController {
       s"*** Body: ${request.body}" +
       s"*** Query string: ${request.rawQueryString}")
 
-    // 1 in 10 calls will be a 500, just to test the retry
-    if (true) {
-      Logger.info("Returned a random error on purpose")
-      Future.successful(InternalServerError("A purposeful error to test retries occurred!!!![]*$:-()foo.exception\n\n\n "))
-    } else {
-      Logger.info("Returned a success message")
+    request.body.asJson.map { contentAsJson =>
+      Logger.debug(s"Callback received with body: $contentAsJson")
+
+      val status = (contentAsJson \ "status").toString
+
+      status match {
+        case "setup_process" => Logger.debug("setup_process callback received!")
+        case "view_practice_question" => Logger.debug("view_practice_question callback received!")
+        case "question" => Logger.debug("question callback received!")
+        case "final" => Logger.debug("final callback received!")
+        case "finished" => Logger.debug("finished callback received!")
+        case _ => Logger.warn(s"Unknown callback type received! Status was $status, JSON body was $contentAsJson")
+      }
+
       Future.successful(Ok("Received"))
+    }.getOrElse {
+      Logger.warn(s"Callback received with invalid JSON or empty body received. Raw request: ${request.body}")
+      Future.successful(BadRequest("Callback body was empty"))
     }
   }
 
