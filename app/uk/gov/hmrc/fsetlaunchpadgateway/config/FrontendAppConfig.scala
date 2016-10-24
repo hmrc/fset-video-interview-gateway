@@ -36,8 +36,8 @@ object FrontendAppConfig extends FrontendAppConfig with ServicesConfig {
 
   private def loadConfig(key: String) = configuration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
 
-  override lazy val faststreamApiConfig = configuration.underlying.as[FaststreamApiConfig]("microservice.services.faststream")
-  override lazy val launchpadApiConfig = configuration.underlying.as[LaunchpadApiConfig]("microservice.services.launchpad.api")
+  lazy val faststreamApiConfig = configuration.underlying.as[FaststreamApiConfig]("microservice.services.faststream")
+  lazy val launchpadApiConfig = configuration.underlying.as[LaunchpadApiConfig]("microservice.services.launchpad.api")
 
   // Whitelist Configuration
   private def whitelistConfig(key: String): Seq[String] = Some(
