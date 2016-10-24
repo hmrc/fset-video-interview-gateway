@@ -3,9 +3,10 @@ package uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream
 import uk.gov.hmrc.fsetlaunchpadgateway.config.WSHttp
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient.CallbackException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects._
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object FaststreamClient extends FaststreamClient {
   override val http = WSHttp

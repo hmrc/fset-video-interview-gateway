@@ -5,12 +5,12 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback.FinalCallback
 
 case class FinalCallbackRequest(candidateId: String, customCandidateId: String, interviewId: Int,
-                                customInterviewId: Option[String], customInviteId: String, status: String, deadline: LocalDate)
+  customInterviewId: Option[String], customInviteId: String, status: String, deadline: LocalDate)
   extends BaseCallbackRequest(candidateId, customCandidateId, interviewId, customInterviewId, customInviteId, status, deadline) {
 }
 
 object FinalCallbackRequest {
-  def apply(callback: FinalCallback): FinalCallbackRequest = FinalCallbackRequest(
+  def fromExchange(callback: FinalCallback): FinalCallbackRequest = FinalCallbackRequest(
     callback.candidate_id,
     callback.custom_candidate_id,
     callback.interview_id,

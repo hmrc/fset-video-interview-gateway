@@ -4,7 +4,14 @@ import org.scalatestplus.play.OneAppPerSuite
 import play.api.libs.json.{ JsValue, Json }
 import play.api.mvc.{ AnyContentAsEmpty, AnyContentAsJson }
 import play.api.test.Helpers._
+import org.mockito.Matchers.any
+import org.mockito.Mockito._
 import play.api.test.{ FakeHeaders, FakeRequest, Helpers }
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects._
+import uk.gov.hmrc.play.http.HeaderCarrier
+
+import scala.concurrent.Future
 
 class CallbackControllerSpec extends BaseControllerSpec with OneAppPerSuite {
   "Callback Controller#present" should {
@@ -12,30 +19,40 @@ class CallbackControllerSpec extends BaseControllerSpec with OneAppPerSuite {
       val result = controller.present()(makeCallbackJsonPostRequest(setupProcessJson))
 
       status(result) mustBe OK
+
+      verify(mockFaststreamClient, times(1)).setupProcessCallback(any[SetupProcessCallbackRequest]())(any[HeaderCarrier]())
     }
 
     "correctly parse and reply to View Practice Question Callbacks" in new TestFixture {
       val result = controller.present()(makeCallbackJsonPostRequest(viewPracticeQuestionJson))
 
       status(result) mustBe OK
+
+      verify(mockFaststreamClient, times(1)).viewPracticeQuestionCallback(any[ViewPracticeQuestionCallbackRequest]())(any[HeaderCarrier]())
     }
 
     "correctly parse and reply to Question Callbacks" in new TestFixture {
       val result = controller.present()(makeCallbackJsonPostRequest(questionCallbackJson))
 
       status(result) mustBe OK
+
+      verify(mockFaststreamClient, times(1)).questionCallback(any[QuestionCallbackRequest]())(any[HeaderCarrier]())
     }
 
     "correctly parse and reply to Final Callbacks" in new TestFixture {
       val result = controller.present()(makeCallbackJsonPostRequest(finalCallbackJson))
 
       status(result) mustBe OK
+
+      verify(mockFaststreamClient, times(1)).finalCallback(any[FinalCallbackRequest]())(any[HeaderCarrier]())
     }
 
     "correctly parse and reply to Finished Callbacks" in new TestFixture {
       val result = controller.present()(makeCallbackJsonPostRequest(finishedCallbackJson))
 
       status(result) mustBe OK
+
+      verify(mockFaststreamClient, times(1)).finishedCallback(any[FinishedCallbackRequest]())(any[HeaderCarrier]())
     }
 
     "when parsing valid but unrecognisable json, but with a valid status key, return a bad request" in new TestFixture {
@@ -53,7 +70,15 @@ class CallbackControllerSpec extends BaseControllerSpec with OneAppPerSuite {
 
   trait TestFixture {
 
-    class TestController() extends CallbackController
+    val mockFaststreamClient = mock[FaststreamClient]
+
+    when(mockFaststreamClient.setupProcessCallback(any())(any())).thenReturn(Future.successful(()))
+    when(mockFaststreamClient.viewPracticeQuestionCallback(any())(any())).thenReturn(Future.successful(()))
+    when(mockFaststreamClient.questionCallback(any())(any())).thenReturn(Future.successful(()))
+    when(mockFaststreamClient.finishedCallback(any())(any())).thenReturn(Future.successful(()))
+    when(mockFaststreamClient.finalCallback(any())(any())).thenReturn(Future.successful(()))
+
+    class TestController() extends CallbackController(mockFaststreamClient)
 
     val controller = new TestController()
 

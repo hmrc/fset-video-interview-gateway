@@ -5,12 +5,12 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback.SetupProcessCallback
 
 case class SetupProcessCallbackRequest(candidateId: String, customCandidateId: String, interviewId: Int,
-                                       customInterviewId: Option[String], customInviteId: String, status: String, deadline: LocalDate)
+  customInterviewId: Option[String], customInviteId: String, status: String, deadline: LocalDate)
   extends BaseCallbackRequest(candidateId, customCandidateId, interviewId, customInterviewId, customInviteId, status, deadline)
 
 object SetupProcessCallbackRequest {
 
-  def apply(callback: SetupProcessCallback): SetupProcessCallbackRequest = SetupProcessCallbackRequest(
+  def fromExchange(callback: SetupProcessCallback): SetupProcessCallbackRequest = SetupProcessCallbackRequest(
     callback.candidate_id,
     callback.custom_candidate_id,
     callback.interview_id,
