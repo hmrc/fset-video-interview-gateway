@@ -51,5 +51,5 @@ trait FaststreamClient {
     }
   }
 
-  private def getLaunchpadPrefix(inviteId: String) = "/launchpad/$inviteId"
+  private def getLaunchpadPrefix(inviteId: String) = s"/launchpad/$inviteId"
 }
