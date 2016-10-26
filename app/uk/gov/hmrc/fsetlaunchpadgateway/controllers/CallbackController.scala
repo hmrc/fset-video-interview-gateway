@@ -16,7 +16,7 @@ object CallbackController extends CallbackController(FaststreamClient)
 
 class CallbackController(faststreamClient: FaststreamClient) extends FrontendController {
 
-  // scalastyle:off
+  // scalastyle:off cyclomatic.complexity method.length
   def present(): Action[AnyContent] = Action.async { implicit request =>
     Logger.info("Received callback => " + request.body.asJson.getOrElse("No callback body detected!").toString + "\n")
 
