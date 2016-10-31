@@ -57,10 +57,10 @@ class CallbackController(faststreamClient: FaststreamClient) extends FrontendCon
           Future.successful(BadRequest("Status was not recognised"))
       }) match {
         case Success(result) => result
-        case Failure(ex) if ex.isInstanceOf[JsResultException] =>
+        case Failure(ex: JsResultException) =>
           Logger.warn(s"Could not parse payload with valid status. Raw request: ${request.body}. Exception: $ex")
           Future.successful(BadRequest("Request was malformed"))
-        case Failure(ex) if ex.isInstanceOf[CallbackException] =>
+        case Failure(ex: CallbackException) =>
           Logger.warn(s"Error when passing callback to faststream. Raw request: ${request.body}. Exception: $ex")
           Future.successful(InternalServerError("Request to upstream server failed"))
         case Failure(ex) =>

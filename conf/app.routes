@@ -4,3 +4,4 @@ POST        /faststream/callback             uk.gov.hmrc.fsetlaunchpadgateway.co
 
 POST        /faststream/register        uk.gov.hmrc.fsetlaunchpadgateway.controllers.ApplicationController.createCandidate()
 POST        /faststream/invite          uk.gov.hmrc.fsetlaunchpadgateway.controllers.ApplicationController.inviteCandidate()
+POST        /faststream/extend          uk.gov.hmrc.fsetlaunchpadgateway.controllers.ApplicationController.extendCandidate()
