@@ -1,17 +1,22 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.controllers
 
 import play.api.Logger
+import play.api.libs.json.JsResultException
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.mvc._
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient.CallbackException
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects._
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback._
 
 import scala.concurrent.Future
 import scala.util.{ Failure, Random, Success, Try }
 
-object CallbackController extends CallbackController
+object CallbackController extends CallbackController(FaststreamClient)
 
-trait CallbackController extends FrontendController {
+class CallbackController(faststreamClient: FaststreamClient) extends FrontendController {
 
+  // scalastyle:off cyclomatic.complexity method.length
   def present(): Action[AnyContent] = Action.async { implicit request =>
     Logger.warn("Received callback => " + request.body.asJson.getOrElse("No callback body detected!").toString + "\n")
 
@@ -29,36 +34,45 @@ trait CallbackController extends FrontendController {
         case Some("setup_process") =>
           Logger.debug("setup_process callback received!")
           val parsed = contentAsJson.as[SetupProcessCallback]
-          Future.successful(Ok("Received"))
+          faststreamClient.setupProcessCallback(SetupProcessCallbackRequest.fromExchange(parsed)).map(_ => Ok("Received"))
         case Some("view_practice_question") =>
           Logger.debug("view_practice_question callback received!")
           val parsed = contentAsJson.as[ViewPracticeQuestionCallback]
-          Future.successful(Ok("Received"))
+          faststreamClient.viewPracticeQuestionCallback(ViewPracticeQuestionCallbackRequest.fromExchange(parsed)).map(_ => Ok("Received"))
         case Some("question") =>
           Logger.debug("question callback received!")
           val parsed = contentAsJson.as[QuestionCallback]
           Logger.debug("Question parsed => " + parsed)
-          Future.successful(Ok("Received"))
+          faststreamClient.questionCallback(QuestionCallbackRequest.fromExchange(parsed)).map(_ => Ok("Received"))
         case Some("final") =>
           val parsed = contentAsJson.as[FinalCallback]
           Logger.debug("final callback received!")
-          Future.successful(Ok("Received"))
+          faststreamClient.finalCallback(FinalCallbackRequest.fromExchange(parsed)).map(_ => Ok("Received"))
         case Some("finished") =>
           val parsed = contentAsJson.as[FinishedCallback]
           Logger.debug("finished callback received!")
-          Future.successful(Ok("Received"))
+          faststreamClient.finishedCallback(FinishedCallbackRequest.fromExchange(parsed)).map(_ => Ok("Received"))
         case _ =>
           Logger.warn(s"Unknown callback type received! Status was $status, JSON body was $contentAsJson")
           Future.successful(BadRequest("Status was not recognised"))
       }) match {
         case Success(result) => result
-        case Failure(ex) => Future.successful(BadRequest("Request was malformed"))
+        case Failure(ex: JsResultException) =>
+          Logger.warn(s"Could not parse payload with valid status. Raw request: ${request.body}. Exception: $ex")
+          Future.successful(BadRequest("Request was malformed"))
+        case Failure(ex: CallbackException) =>
+          Logger.warn(s"Error when passing callback to faststream. Raw request: ${request.body}. Exception: $ex")
+          Future.successful(InternalServerError("Request to upstream server failed"))
+        case Failure(ex) =>
+          Logger.warn(s"Could not parse payload. Raw request: ${request.body}")
+          Future.successful(BadRequest("The request failed"))
       }
     }.getOrElse {
       Logger.warn(s"Callback received with invalid JSON or empty body received. Raw request: ${request.body}")
       Future.successful(BadRequest("Callback body was empty"))
     }
   }
+  // scalastyle:on
 }
 
 // scalastyle:off
