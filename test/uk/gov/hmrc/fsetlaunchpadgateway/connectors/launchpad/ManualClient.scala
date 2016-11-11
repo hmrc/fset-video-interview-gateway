@@ -8,6 +8,7 @@ import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.account.{ CreateRequest, UpdateRequest }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.candidate.ExtendDeadlineRequest
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.interview.SeamlessLoginInviteRequest
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.account.UpdateRequest
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Await
@@ -49,7 +50,13 @@ class ManualClient extends UnitSpec with OneServerPerTest {}
           "2016-10-30",
           false
         )
+
+      /*
+      val theRequest = AccountClient.updateAccount(
+        accountId.get, UpdateRequest(
+        Some(FrontendAppConfig.launchpadApiConfig.callbackUrl)
       )
+      */
 
       // TODO: This should be a mapped future
       val response = Await.result(theRequest, 30 seconds)

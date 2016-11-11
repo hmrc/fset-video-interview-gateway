@@ -3,6 +3,7 @@ package uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream
 import uk.gov.hmrc.fsetlaunchpadgateway.config.WSHttp
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient.CallbackException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects._
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects.reviewed.ReviewedCallbackRequest
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.Future
@@ -43,6 +44,11 @@ trait FaststreamClient {
   def finishedCallback(callback: FinishedCallbackRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
     val launchPadPrefix = getLaunchpadPrefix(callback.customInviteId)
     http.PUT(s"${url.host}${url.base}$launchPadPrefix/finishedCallback", callback).map(okOrThrow)
+  }
+
+  def reviewedCallback(callback: ReviewedCallbackRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
+    val launchPadPrefix = getLaunchpadPrefix(callback.customInviteId)
+    http.PUT(s"${url.host}${url.base}$launchPadPrefix/reviewedCallback", callback).map(okOrThrow)
   }
 
   private def okOrThrow(response: HttpResponse) = {

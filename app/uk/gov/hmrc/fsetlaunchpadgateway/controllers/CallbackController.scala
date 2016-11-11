@@ -7,7 +7,9 @@ import play.api.mvc._
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient.CallbackException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects._
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects.reviewed.ReviewedCallbackRequest
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback._
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback.reviewed.ReviewedCallback
 
 import scala.concurrent.Future
 import scala.util.{ Failure, Random, Success, Try }
@@ -28,9 +30,9 @@ class CallbackController(faststreamClient: FaststreamClient) extends FrontendCon
     request.body.asJson.map { contentAsJson =>
       Logger.debug(s"Callback received with body: $contentAsJson")
 
-      val status = (contentAsJson \ "status").asOpt[String]
+      val status = (contentAsJson \ "status").asOpt[String].map(_.toLowerCase)
 
-      Try(status match {
+      val tryParse = Try(status.map(_.toLowerCase) match {
         case Some("setup_process") =>
           Logger.debug("setup_process callback received!")
           val parsed = contentAsJson.as[SetupProcessCallback]
@@ -52,11 +54,22 @@ class CallbackController(faststreamClient: FaststreamClient) extends FrontendCon
           val parsed = contentAsJson.as[FinishedCallback]
           Logger.debug("finished callback received!")
           faststreamClient.finishedCallback(FinishedCallbackRequest.fromExchange(parsed)).map(_ => Ok("Received"))
+        case Some("reviewed") =>
+          val parsed = contentAsJson.as[ReviewedCallback]
+          Logger.debug("reviewed callback received!")
+          faststreamClient.reviewedCallback(ReviewedCallbackRequest.fromExchange(parsed)).map(_ => Ok("Received"))
         case _ =>
           Logger.warn(s"Unknown callback type received! Status was $status, JSON body was $contentAsJson")
           Future.successful(BadRequest("Status was not recognised"))
-      }) match {
-        case Success(result) => result
+      })
+
+      tryParse match {
+        case Success(result) =>
+          result.recover {
+            case ex =>
+              Logger.warn(s"Error upstream.", ex)
+              InternalServerError(s"Error upstream.")
+          }
         case Failure(ex: JsResultException) =>
           Logger.warn(s"Could not parse payload with valid status. Raw request: ${request.body}. Exception: $ex")
           Future.successful(BadRequest("Request was malformed"))

@@ -128,6 +128,7 @@ trait Client {
 
   def post(url: String, queryParams: Seq[(String, String)]): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = getHeaderCarrier
+    Logger.debug("POSTING -> " + convertQueryParamsForTx(queryParams))
     http.POSTForm(url, convertQueryParamsForTx(queryParams))
   }
 

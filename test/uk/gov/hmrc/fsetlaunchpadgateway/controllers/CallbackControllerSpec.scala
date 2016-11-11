@@ -9,6 +9,7 @@ import org.mockito.Mockito._
 import play.api.test.{ FakeHeaders, FakeRequest, Helpers }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects._
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects.reviewed.ReviewedCallbackRequest
 import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.Future
@@ -55,6 +56,23 @@ class CallbackControllerSpec extends BaseControllerSpec with OneAppPerSuite {
       verify(mockFaststreamClient, times(1)).finishedCallback(any[FinishedCallbackRequest]())(any[HeaderCarrier]())
     }
 
+    "correctly parse and reply to one-reviewer Reviewed Callbacks" in new TestFixture {
+      val result = controller.present()(makeCallbackJsonPostRequest(oneReviewerCallbackJson))
+
+      status(result) mustBe OK
+
+      verify(mockFaststreamClient, times(1)).reviewedCallback(any[ReviewedCallbackRequest]())(any[HeaderCarrier]())
+    }
+
+    // TODO: Could not login to launchpad as a second reviewer when trying to write tests to generate suitable sample JSON
+    "correctly parse and reply to two-reviewer Reviewed Callbacks" ignore {
+      /* val result = controller.present()(makeCallbackJsonPostRequest(twoReviewerCallbackJson))
+
+      status(result) mustBe OK
+
+      verify(mockFaststreamClient, times(1)).reviewedCallback(any[ReviewedCallbackRequest]())(any[HeaderCarrier]()) */
+    }
+
     "when parsing valid but unrecognisable json, but with a valid status key, return a bad request" in new TestFixture {
       val result = controller.present()(makeCallbackJsonPostRequest(unrecogniseableJsonValidStatus))
     }
@@ -77,6 +95,7 @@ class CallbackControllerSpec extends BaseControllerSpec with OneAppPerSuite {
     when(mockFaststreamClient.questionCallback(any())(any())).thenReturn(Future.successful(()))
     when(mockFaststreamClient.finishedCallback(any())(any())).thenReturn(Future.successful(()))
     when(mockFaststreamClient.finalCallback(any())(any())).thenReturn(Future.successful(()))
+    when(mockFaststreamClient.reviewedCallback(any())(any())).thenReturn(Future.successful(()))
 
     class TestController() extends CallbackController(mockFaststreamClient)
 
@@ -152,6 +171,401 @@ class CallbackControllerSpec extends BaseControllerSpec with OneAppPerSuite {
          | "status":"final",
          | "deadline":"2016-10-28"
          | }
+       """.stripMargin
+
+    val oneReviewerCallbackJson =
+      s"""
+         | {
+         |    "candidate_id": "cnd_ac832d202c42a8ebd99e0bec3e36b873",
+         |    "custom_candidate_id": "FSCND-45b39222-366d-4652-91ce-6ba0bd37ccd0",
+         |    "interview_id": 9,
+         |    "custom_interview_id": null,
+         |    "custom_invite_id": "FSINV-b4a39cdb-70db-40a8-871e-971c4bd24a76",
+         |    "status": "reviewed",
+         |    "deadline": "2016-11-16",
+         |    "reviews": {
+         |        "total_average": {
+         |            "type": "video_interview",
+         |            "score_text": "42%",
+         |            "score_value": 42
+         |        },
+         |        "reviewers": {
+         |            "reviewer_1": {
+         |                "name": "AN Reviewer",
+         |                "email": "a.n.reviewer@reviewer.com",
+         |                "comment": null,
+         |                "question_1": {
+         |                    "text": "This is the text for question 1?",
+         |                    "id": 18,
+         |                    "review_criteria_1": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                        "type": "numeric",
+         |                        "score": null
+         |                    },
+         |                    "review_criteria_2": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description ",
+         |                        "type": "numeric",
+         |                        "score": null
+         |                    }
+         |                },
+         |                "question_2": {
+         |                    "text": "This is the text for question 2?",
+         |                    "id": 21,
+         |                    "review_criteria_1": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description   ",
+         |                        "type": "numeric",
+         |                        "score": "1"
+         |                    },
+         |                    "review_criteria_2": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                        "type": "numeric",
+         |                        "score": "3.5"
+         |                    }
+         |                },
+         |                "question_3": {
+         |                    "text": "This is the text for question 3?",
+         |                    "id": 24,
+         |                    "review_criteria_1": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                        "type": "numeric",
+         |                        "score": "3"
+         |                    },
+         |                    "review_criteria_2": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description  ",
+         |                        "type": "numeric",
+         |                        "score": "3"
+         |                    }
+         |                },
+         |                "question_4": {
+         |                    "text": "This is the text for question 4?",
+         |                    "id": 27,
+         |                    "review_criteria_1": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description        ",
+         |                        "type": "numeric",
+         |                        "score": "1"
+         |                    },
+         |                    "review_criteria_2": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description  ",
+         |                        "type": "numeric",
+         |                        "score": "4"
+         |                    }
+         |                },
+         |                "question_5": {
+         |                    "text": "This is the text for question 5?",
+         |                    "id": 30,
+         |                    "review_criteria_1": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description      ",
+         |                        "type": "numeric",
+         |                        "score": "3.5"
+         |                    },
+         |                    "review_criteria_2": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description  ",
+         |                        "type": "numeric",
+         |                        "score": "4"
+         |                    }
+         |                },
+         |                "question_6": {
+         |                    "text": "This is the text for question 6?",
+         |                    "id": 33,
+         |                    "review_criteria_1": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description   ",
+         |                        "type": "numeric",
+         |                        "score": "4"
+         |                    },
+         |                    "review_criteria_2": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description     ",
+         |                        "type": "numeric",
+         |                        "score": "3"
+         |                    }
+         |                },
+         |                "question_7": {
+         |                    "text": "This is the text for question 7?",
+         |                    "id": 36,
+         |                    "review_criteria_1": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description ",
+         |                        "type": "numeric",
+         |                        "score": "3.5"
+         |                    },
+         |                    "review_criteria_2": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description  ",
+         |                        "type": "numeric",
+         |                        "score": "4"
+         |                    }
+         |                },
+         |                "question_8": {
+         |                    "text": "This is the text for question 8?",
+         |                    "id": 39,
+         |                    "review_criteria_1": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description  ",
+         |                        "type": "numeric",
+         |                        "score": "4"
+         |                    },
+         |                    "review_criteria_2": {
+         |                        "text": "Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description      ",
+         |                        "type": "numeric",
+         |                        "score": "2.5"
+         |                    }
+         |                }
+         |            }
+         |        }
+         |    }
+         |}
+       """.stripMargin
+
+    val twoReviewerCallbackJson =
+      s"""
+         | {
+         |   "candidate_id":"cnd_f7f4577871c300abf42b36e65e878b5f",
+         |   "custom_candidate_id":"FSCND-7e0dbbb4-cbea-4d5d-bad4-7dea087e0590",
+         |   "interview_id":9,
+         |   "custom_interview_id":null,
+         |   "custom_invite_id":"FSINV-38cd5261-ba58-4e55-8f4e-21c0a294203f",
+         |   "status":"reviewed",
+         |   "deadline":"2016-10-30",
+         |   "reviews":{
+         |      "total_average":{
+         |         "type":"video_interview",
+         |         "score_text":"35%",
+         |         "score_value":35
+         |      },
+         |      "reviewers":{
+         |         "reviewer_1":{
+         |            "name":"AN Reviewer",
+         |            "email":"a.n.reviewer@reviewers.com",
+         |            "comment":"This is a test set of comments",
+         |            "question_1":{
+         |               "text":"This is the text of question 1",
+         |               "id":18,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                  "type":"numeric",
+         |                  "score":"3"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                  "type":"numeric",
+         |                  "score":"4"
+         |               }
+         |            },
+         |            "question_2":{
+         |               "text":"This is the text of question 2",
+         |               "id":21,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description   ",
+         |                  "type":"numeric",
+         |                  "score":"3"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                  "type":"numeric",
+         |                  "score":"3"
+         |               }
+         |            },
+         |            "question_3":{
+         |               "text":"This is the text of question 3",
+         |               "id":24,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                  "type":"numeric",
+         |                  "score":"2.5"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description ",
+         |                  "type":"numeric",
+         |                  "score":"3.5"
+         |               }
+         |            },
+         |            "question_4":{
+         |               "text":"This is the text of question 4",
+         |               "id":27,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description        ",
+         |                  "type":"numeric",
+         |                  "score":"2"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description ",
+         |                  "type":"numeric",
+         |                  "score":"1.5"
+         |               }
+         |            },
+         |            "question_5":{
+         |               "text":"This is the text of question 5",
+         |               "id":30,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description ",
+         |                  "type":"numeric",
+         |                  "score":"2"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                  "type":"numeric",
+         |                  "score":"2"
+         |               }
+         |            },
+         |            "question_6":{
+         |               "text":"This is the text of question 6",
+         |               "id":33,
+         |               "review_criteria_1":{
+         |                  "text":"This is the text of question 6",
+         |                  "type":"numeric",
+         |                  "score":"4"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description     ",
+         |                  "type":"numeric",
+         |                  "score":"4"
+         |               }
+         |            },
+         |            "question_7":{
+         |               "text":"This is the text of question 7",
+         |               "id":36,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description ",
+         |                  "type":"numeric",
+         |                  "score":"3.5"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description   ",
+         |                  "type":"numeric",
+         |                  "score":"1"
+         |               }
+         |            },
+         |            "question_8":{
+         |               "text":"This is the text of question 8",
+         |               "id":39,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description ",
+         |                  "type":"numeric",
+         |                  "score":"3"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description     ",
+         |                  "type":"numeric",
+         |                  "score":"2.5"
+         |               }
+         |            }
+         |         },
+         |         "reviewer_2":{
+         |            "name":"Some other reviewer",
+         |            "email":"a.b.reviewer@reviewers.com",
+         |            "comment":"This is awesome!",
+         |            "question_1":{
+         |               "text":"This is the text of question 1",
+         |               "id":18,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                  "type":"numeric",
+         |                  "score":"2.5"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                  "type":"numeric",
+         |                  "score":"3.5"
+         |               }
+         |            },
+         |            "question_2":{
+         |               "text":"This is the text of question 2",
+         |               "id":21,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description   ",
+         |                  "type":"numeric",
+         |                  "score":"1.5"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                  "type":"numeric",
+         |                  "score":"3.5"
+         |               }
+         |            },
+         |            "question_3":{
+         |               "text":"This is the text of question 3",
+         |               "id":24,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                  "type":"numeric",
+         |                  "score":"3"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description ",
+         |                  "type":"numeric",
+         |                  "score":"2"
+         |               }
+         |            },
+         |            "question_4":{
+         |               "text":"This is the text of question 4",
+         |               "id":27,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description        ",
+         |                  "type":"numeric",
+         |                  "score":"2.5"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description ",
+         |                  "type":"numeric",
+         |                  "score":"1.5"
+         |               }
+         |            },
+         |            "question_5":{
+         |               "text":"This is the text of question 5",
+         |               "id":30,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description ",
+         |                  "type":"numeric",
+         |                  "score":"2.5"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                  "type":"numeric",
+         |                  "score":"3"
+         |               }
+         |            },
+         |            "question_6":{
+         |               "text":"This is the text of question 6",
+         |               "id":33,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description",
+         |                  "type":"numeric",
+         |                  "score":"2.5"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description     ",
+         |                  "type":"numeric",
+         |                  "score":"3.5"
+         |               }
+         |            },
+         |            "question_7":{
+         |               "text":"This is the text of question 7",
+         |               "id":36,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description ",
+         |                  "type":"numeric",
+         |                  "score":"2.5"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description   ",
+         |                  "type":"numeric",
+         |                  "score":"3.5"
+         |               }
+         |            },
+         |            "question_8":{
+         |               "text":"This is the text of question 8",
+         |               "id":39,
+         |               "review_criteria_1":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description ",
+         |                  "type":"numeric",
+         |                  "score":"2"
+         |               },
+         |               "review_criteria_2":{
+         |                  "text":"Criteria \\r\\n 1 and Criteria \\r\\n\\r\\n2 description     ",
+         |                  "type":"numeric",
+         |                  "score":"3.5"
+         |               }
+         |            }
+         |         }
+         |      }
+         |   }
+         |}
        """.stripMargin
 
     val unrecogniseableJsonValidStatus =
