@@ -32,4 +32,9 @@ trait InterviewClient extends Client {
   def create(createRequest: CreateRequest): Future[HttpResponse] = {
     post(getPostRequestUrl(), caseClassToTuples(createRequest))
   }
+
+  // TODO: Remove this utility method before launch
+  def update(updateRequest: UpdateRequest): Future[HttpResponse] = {
+    put(getPostRequestUrl("/13917"), caseClassToTuples(updateRequest))
+  }
 }
