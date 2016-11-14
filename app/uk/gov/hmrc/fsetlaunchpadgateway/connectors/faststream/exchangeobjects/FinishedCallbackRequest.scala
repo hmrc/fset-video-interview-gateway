@@ -9,7 +9,6 @@ case class FinishedCallbackRequest(received: DateTime, candidateId: String, cust
   extends BaseCallbackRequest(received, candidateId, customCandidateId, interviewId, customInterviewId, customInviteId, status, deadline)
 
 object FinishedCallbackRequest {
-
   def fromExchange(callback: FinishedCallback): FinishedCallbackRequest = FinishedCallbackRequest(
     DateTime.now(),
     callback.candidate_id,
