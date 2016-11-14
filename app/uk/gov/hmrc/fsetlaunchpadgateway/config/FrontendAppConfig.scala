@@ -19,6 +19,7 @@ trait FrontendAppConfig {
 object FrontendAppConfig extends FrontendAppConfig with ServicesConfig {
 
   case class LaunchpadApiConfig(
+    extensionValidUserEmailAddress: String,
     key: String,
     baseUrl: String,
     accountId: Int,

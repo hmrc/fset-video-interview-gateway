@@ -59,6 +59,23 @@ trait ApplicationController extends BaseController {
     }
   }
 
+  def extendCandidate(): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    withJsonBody[ExtendCandidateRequest] { ec =>
+      candidateClient.extendDeadline(
+        ec.candidateId,
+        candidate.ExtendDeadlineRequest(
+          FrontendAppConfig.launchpadApiConfig.accountId,
+          ec.interviewId,
+          FrontendAppConfig.launchpadApiConfig.extensionValidUserEmailAddress,
+          ec.newDeadline.toString("yyyy-MM-dd"),
+          send_email = false
+        )
+      ).map { _ =>
+          Ok
+        }.recover(recoverFromBadCall)
+    }
+  }
+
   private def recoverFromBadCall: PartialFunction[Throwable, Result] = {
     case e: Throwable =>
       Logger.warn(s"Error communicating with launchpad: ${e.getMessage}. Stacktrace: ${e.getStackTrace}")
