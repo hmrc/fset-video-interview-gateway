@@ -16,6 +16,7 @@ microservice {
        baseUrl = "BASEURLHERE"
        key = "KEYHERE"
        accountId = ACCOUNTIDHERE
+       extensionValidUserEmailAddress = "valid.launchpad.user@address.com"
      }
    }
  }
@@ -31,3 +32,4 @@ Please get in touch with any of the contributing members if you would be interes
 ### License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html")
+ 
