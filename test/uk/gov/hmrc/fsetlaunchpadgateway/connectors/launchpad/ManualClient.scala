@@ -17,11 +17,10 @@ import language.postfixOps
 import scala.concurrent.ExecutionContext.Implicits.global
 
 // This is a manual test class for trying new methods against the launchpad API
-class ManualClient extends UnitSpec with OneServerPerTest {}
+class ManualClient extends UnitSpec with OneServerPerTest {
 
-/*
   "Testing" should {
-    "Client test" in {
+    "Client test" ignore {
 
       implicit val fakeRequest = FakeRequest()
 
@@ -29,45 +28,22 @@ class ManualClient extends UnitSpec with OneServerPerTest {}
 
       Logger.warn("Sending request...")
 
-      /*
-      val theRequest = InterviewClient.seamlessLoginInvite(
-        accountId,
-        ,
-        SeamlessLoginInviteRequest(
-          accountId,
-          "cnd_a5c3aa07985df493681dbca8b2b9c13d",
-          Some("CSR_CUSTOM_INVITE_REFERENCE_HENRI_1337"),
-          None,
-          None
-        )
-      )*/
-
-      val theRequest = CandidateClient.extendDeadline(
-        "cnd_a5c3aa07985df493681dbca8b2b9c13d",
-        ExtendDeadlineRequest(
-          1,
-          "",
-          "2016-10-30",
-          false
-        )
-
-      /*
       val theRequest = AccountClient.updateAccount(
         accountId.get, UpdateRequest(
         Some(FrontendAppConfig.launchpadApiConfig.callbackUrl)
-      )
-      */
+      ))
 
       // TODO: This should be a mapped future
       val response = Await.result(theRequest, 30 seconds)
 
-      Logger.warn("Response = " + response + "\n\n")
+      Logger.warn("Response = " + response.body + "\n\n")
 
       assert(true)
     }
   }
 
 }
+/*
 List all interviews
 val theRequest = InterviewClient.list(Some(FrontendAppConfig.launchpadApiConfig.accountId))
  */
