@@ -41,7 +41,9 @@ trait MicroService {
       fork in Test := false,
       retrieveManaged := true,
       evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
-      scalacOptions += "-feature"
+      scalacOptions += "-feature",
+      // Currently don't enable warning in value discard in tests until ScalaTest 3
+      scalacOptions in (Compile, compile) += "-Ywarn-value-discard"
     )
     .configs(IntegrationTest)
     .settings(inConfig(IntegrationTest)(Defaults.testSettings) : _*)
