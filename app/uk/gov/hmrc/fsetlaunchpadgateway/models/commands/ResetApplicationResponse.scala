@@ -27,7 +27,7 @@ object ResetApplicantResponse {
   def fromResponse(resetResponse: ResetResponse): ResetApplicantResponse = {
     ResetApplicantResponse(
       customInviteId = resetResponse.custom_invite_id,
-      testUrl = resetResponse.link,
+      testUrl = resetResponse.link.url,
       deadline = resetResponse.deadline)
   }
 }

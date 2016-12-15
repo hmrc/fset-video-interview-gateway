@@ -68,10 +68,11 @@ trait ApplicationController extends BaseController {
         application.ResetRequest(
           interview_id = request.interviewId,
           account_id = launchpadAccountId,
-          deadline = Some(request.newDeadline.toString("yyyy-MM-dd")),
+          deadline = request.newDeadline.toString("yyyy-MM-dd"),
           employer_email = employerEmail,
           send_email = false
-        )
+        ),
+        request.candidateId
       ).map { resetResponse =>
           Ok(Json.toJson(ResetApplicantResponse.fromResponse(resetResponse)))
         }.recover(recoverFromBadCall)
@@ -80,17 +81,19 @@ trait ApplicationController extends BaseController {
 
   def retakeCandidate(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[RetakeApplicantRequest] { request =>
-      applicationClient.retake(
-        application.RetakeRequest(
-          interview_id = request.interviewId,
-          account_id = launchpadAccountId,
-          deadline = Some(request.newDeadline.toString("yyyy-MM-dd")),
-          employer_email = employerEmail,
-          send_email = false
-        )
-      ).map { retakeResponse =>
-          Ok(Json.toJson(RetakeApplicantResponse.fromResponse(retakeResponse)))
-        }.recover(recoverFromBadCall)
+      {
+        applicationClient.retake(
+          application.RetakeRequest(
+            interview_id = request.interviewId,
+            account_id = launchpadAccountId,
+            deadline = request.newDeadline.toString("yyyy-MM-dd"),
+            employer_email = employerEmail,
+            send_email = false
+          ),
+          request.candidateId
+        ).map { retakeResponse => Ok(Json.toJson(RetakeApplicantResponse.fromResponse(retakeResponse)))
+          }.recover(recoverFromBadCall)
+      }
     }
   }
 

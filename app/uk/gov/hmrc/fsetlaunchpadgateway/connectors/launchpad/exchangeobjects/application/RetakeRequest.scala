@@ -6,7 +6,7 @@ import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.Con
 case class RetakeRequest(
   interview_id: Int,
   account_id: Option[Int],
-  deadline: Option[String],
+  deadline: String,
   employer_email: String,
   send_email: Boolean = true,
   retake_message: Option[String] = None,

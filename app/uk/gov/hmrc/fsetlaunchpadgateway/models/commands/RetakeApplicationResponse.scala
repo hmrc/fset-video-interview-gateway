@@ -27,7 +27,7 @@ object RetakeApplicantResponse {
   def fromResponse(retakeResponse: RetakeResponse): RetakeApplicantResponse = {
     RetakeApplicantResponse(
       customInviteId = retakeResponse.custom_invite_id,
-      testUrl = retakeResponse.link,
+      testUrl = retakeResponse.link.url,
       deadline = retakeResponse.deadline)
   }
 }

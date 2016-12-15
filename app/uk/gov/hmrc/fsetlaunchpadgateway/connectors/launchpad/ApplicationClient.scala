@@ -19,13 +19,18 @@ object ApplicationClient extends ApplicationClient {
 }
 
 trait ApplicationClient extends Client {
-  def reset(resetRequest: ResetRequest)(implicit format: Format[ResetResponse]): Future[ResetResponse] =
+  def reset(resetRequest: ResetRequest, candidateId: String)(implicit format: Format[ResetResponse]): Future[ResetResponse] =
     postWithResponseAsOrThrow[ResetResponse, ResetException](
-      resetRequest, getPostRequestUrl(), ResetException
+      resetRequest,
+      getPostRequestUrl(s"/${candidateId}/reset"),
+      ResetException
     )
 
-  def retake(retakeRequest: RetakeRequest)(implicit format: Format[RetakeResponse]): Future[RetakeResponse] =
+  def retake(retakeRequest: RetakeRequest, candidateId: String)(implicit format: Format[RetakeResponse]): Future[RetakeResponse] = {
     postWithResponseAsOrThrow[RetakeResponse, RetakeException](
-      retakeRequest, getPostRequestUrl(), RetakeException
+      retakeRequest,
+      getPostRequestUrl(s"/${candidateId}/retake"),
+      RetakeException
     )
+  }
 }
