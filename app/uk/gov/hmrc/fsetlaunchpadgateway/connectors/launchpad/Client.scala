@@ -109,7 +109,7 @@ trait Client {
         Try(response.json.\\("response").head.as[R]) match {
           case Success(resp) => resp
           case Failure(ex) => throw exceptionOnFailure(s"Unexpected response from Launchpad when calling $postUrl. Response body was:" +
-              s"${response.body}. Request: ${request}. Caused by exception: ${ex} .", request.getSensitiveStrings)
+            s"${response.body}. Request: ${request}. Caused by exception: ${ex} .", request.getSensitiveStrings)
         }
       } else {
         throw exceptionOnFailure(s"Received a ${response.status} code from Launchpad when calling $postUrl. " +
