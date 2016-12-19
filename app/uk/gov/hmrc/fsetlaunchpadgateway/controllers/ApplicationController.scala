@@ -75,7 +75,7 @@ trait ApplicationController extends BaseController {
         request.candidateId
       ).map { resetResponse =>
           Ok(Json.toJson(ResetApplicantResponse.fromResponse(resetResponse)))
-        }.recover(recoverFromBadCall)
+        }.recover(recoverFromBadResetOrRetakeCall)
     }
   }
 
@@ -92,7 +92,7 @@ trait ApplicationController extends BaseController {
           ),
           request.candidateId
         ).map { retakeResponse => Ok(Json.toJson(RetakeApplicantResponse.fromResponse(retakeResponse)))
-          }.recover(recoverFromBadCall)
+          }.recover(recoverFromBadResetOrRetakeCall)
       }
     }
   }
@@ -118,5 +118,16 @@ trait ApplicationController extends BaseController {
     case e: Throwable =>
       Logger.warn(s"Error communicating with launchpad: ${e.getMessage}. Stacktrace: ${e.getStackTrace}")
       InternalServerError("Error communicating with Launchpad")
+  }
+
+  private def recoverFromBadResetOrRetakeCall: PartialFunction[Throwable, Result] = {
+    case e: Throwable =>
+      Logger.warn(s"Error communicating with launchpad: ${e.getMessage}. Stacktrace: ${e.getStackTrace}")
+      if (e.getMessage.contains("Interview ID and/or Candidate ID are invalid") ||
+        e.getMessage.contains("Candidate is not applicable for application reset")) {
+        Conflict("Video interview cannot be reseted due to being in an unresetable state.")
+      } else {
+        InternalServerError("Error communicating with Launchpad")
+      }
   }
 }
