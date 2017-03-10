@@ -13,6 +13,7 @@ import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.http.ws.{ WSDelete, WSGet, WSPost }
 import uk.gov.hmrc.whitelist.AkamaiWhitelistFilter
 import play.api.Play.current
+import uk.gov.hmrc.play.filters.MicroserviceFilterSupport
 
 import scala.concurrent.Future
 
@@ -32,7 +33,7 @@ object FrontendAuthConnector extends AuthConnector with ServicesConfig {
   lazy val http = WSHttp
 }
 
-object WhitelistFilter extends AkamaiWhitelistFilter with RunMode {
+object WhitelistFilter extends AkamaiWhitelistFilter with RunMode with MicroserviceFilterSupport {
 
   // TODO: At time of publishing this 'apply override' there was a pull request in the play-whitelist-filter project
   // Once merged we should stop doing this apply override and use the library code
