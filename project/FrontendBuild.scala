@@ -31,7 +31,7 @@ private object AppDependencies {
   private val playPartialsVersion = "5.3.0"
   private val playAuthorisedFrontendVersion = "6.3.0"
   private val playConfigVersion = "4.3.0"
-  private val playWhitelist = "1.1.0"
+  private val playWhitelist = "2.0.0"
 
   val compile = Seq(
     ws,

@@ -35,18 +35,9 @@ object FrontendAuthConnector extends AuthConnector with ServicesConfig {
 
 object WhitelistFilter extends AkamaiWhitelistFilter with RunMode with MicroserviceFilterSupport {
 
-  // TODO: At time of publishing this 'apply override' there was a pull request in the play-whitelist-filter project
-  // Once merged we should stop doing this apply override and use the library code
-
-  private def isCircularDestination(requestHeader: RequestHeader): Boolean =
-    requestHeader.uri == destination.url
-
-  private def toCall(rh: RequestHeader): Call =
-    Call(rh.method, rh.uri)
-
   // Whitelist Configuration
   private def whitelistConfig(key: String): Seq[String] =
-    Some(new String(Base64.getDecoder().decode(Play.configuration.getString(key).getOrElse("")), "UTF-8"))
+    Some(new String(Base64.getDecoder.decode(Play.configuration.getString(key).getOrElse("")), "UTF-8"))
       .map(_.split(",")).getOrElse(Array.empty).toSeq
 
   // List of IP addresses
@@ -59,24 +50,4 @@ object WhitelistFilter extends AkamaiWhitelistFilter with RunMode with Microserv
 
   override def destination: Call = Call("GET", "https://www.apply-civil-service-fast-stream.service.gov.uk/outage-fset-faststream/index.html")
 
-  def noHeaderAction(
-    f: (RequestHeader) => Future[Result],
-    rh: RequestHeader
-  ): Future[Result] = { f(rh) }
-
-  override def apply(f: (RequestHeader) => Future[Result])(rh: RequestHeader): Future[Result] =
-    if (excludedPaths contains toCall(rh)) {
-      f(rh)
-    } else {
-      rh.headers.get(trueClient) map {
-        ip =>
-          if (whitelist.contains(ip)) {
-            f(rh)
-          } else if (isCircularDestination(rh)) {
-            Future.successful(Forbidden)
-          } else {
-            Future.successful(Redirect(destination))
-          }
-      } getOrElse noHeaderAction(f, rh)
-    }
 }
