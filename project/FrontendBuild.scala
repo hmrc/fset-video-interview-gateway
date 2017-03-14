@@ -12,11 +12,11 @@ object FrontendBuild extends Build with MicroService {
 
 private object Versions {
   val microserviceBootstrapVersion  = "5.13.0"
-  val pegdown                       = "1.4.2"
+  val pegdown                       = "1.5.0"
   val jsoup                         = "1.7.3"
   val wiremock                      = "1.57"
   val hmrctest                      = "2.3.0"
-  val scalatestplus                 = "1.5.0"
+  val scalatestplus                 = "1.5.1"
 }
 
 private object AppDependencies {

@@ -3,25 +3,21 @@ package uk.gov.hmrc.fsetlaunchpadgateway.config
 import java.util.Base64
 
 import org.scalatest.TestData
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.{ OneAppPerTest, PlaySpec }
-import play.api.{ Application, Environment, Mode }
+import play.api.{ Application, Mode }
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers._
 import play.api.test._
 
 import language.implicitConversions
 
-class WhitelistFilterConfigSpec extends PlaySpec with OneAppPerTest with ScalaFutures {
+class WhitelistFilterConfigSpec extends PlaySpec with OneAppPerTest {
 
   override def newAppForTest(td: TestData): Application = new GuiceApplicationBuilder()
-    .in(Environment(new java.io.File("."), classOf[FakeApplication].getClassLoader, Mode.Test))
-    .global(ProductionFrontendGlobal)
-    .configure(Map(
+    .configure(
       "whitelistExcludedCalls" -> Base64.getEncoder.encodeToString("/ping/ping,/healthcheck".getBytes),
       "whitelist" -> Base64.getEncoder.encodeToString("11.22.33.44".getBytes)
-    ))
-    .build
+    ).global(ProductionFrontendGlobal).in(Mode.Test).build()
 
   "FrontendAppConfig" must {
     "return a valid config item" when {
@@ -44,7 +40,7 @@ class WhitelistFilterConfigSpec extends PlaySpec with OneAppPerTest with ScalaFu
       }
 
       "coming from a IP NOT in the white-list and not with a white-listed path must be redirected" in {
-        val request = FakeRequest(GET, "/fset-launchpad-gateway/faststream/callback").withHeaders("True-Client-IP" -> "93.00.33.33")
+        val request = FakeRequest(POST, "/fset-launchpad-gateway/faststream/callback").withHeaders("True-Client-IP" -> "93.00.33.33")
         val Some(result) = route(app, request)
 
         status(result) mustBe SEE_OTHER

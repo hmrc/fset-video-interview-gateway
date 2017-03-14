@@ -40,6 +40,11 @@ object WhitelistFilter extends AkamaiWhitelistFilter with RunMode with Microserv
     Some(new String(Base64.getDecoder.decode(Play.configuration.getString(key).getOrElse("")), "UTF-8"))
       .map(_.split(",")).getOrElse(Array.empty).toSeq
 
+  override def noHeaderAction(
+    f: (RequestHeader) => Future[Result],
+    rh: RequestHeader
+  ): Future[Result] = { f(rh) }
+
   // List of IP addresses
   override def whitelist: Seq[String] = whitelistConfig("whitelist")
 
