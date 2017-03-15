@@ -1,9 +1,11 @@
 import com.typesafe.sbt.SbtScalariform.{ ScalariformKeys, _ }
 import com.typesafe.sbt.web.Import._
+import play.routes.compiler.StaticRoutesGenerator
 import sbt.Keys._
 import sbt.Tests.{ Group, SubProcess }
 import sbt._
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
+import play.sbt.routes.RoutesKeys.routesGenerator
 
 
 trait MicroService {
@@ -29,7 +31,7 @@ trait MicroService {
   lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
 
   lazy val microservice = Project(appName, file("."))
-    .enablePlugins(Seq(play.PlayScala,SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin) ++ plugins : _*)
+    .enablePlugins(Seq(play.sbt.PlayScala,SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin) ++ plugins : _*)
     .settings(playSettings : _*)
     .settings(scalaSettings: _*)
     .settings(publishingSettings: _*)
@@ -37,6 +39,7 @@ trait MicroService {
     .settings(
       targetJvm := "jvm-1.8",
       libraryDependencies ++= appDependencies,
+      routesGenerator := StaticRoutesGenerator,
       parallelExecution in Test := false,
       fork in Test := false,
       retrieveManaged := true,
@@ -60,14 +63,17 @@ trait MicroService {
       addTestReportOption(IntegrationTest, "int-test-reports"),
       testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
       parallelExecution in IntegrationTest := false)
-    .settings(resolvers ++= Seq(Resolver.bintrayRepo("hmrc", "releases")))
+    .settings(resolvers ++= Seq(
+      Resolver.bintrayRepo("hmrc", "releases"),
+      Resolver.jcenterRepo
+    ))
     .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
 }
 
 private object TestPhases {
 
-  def oneForkedJvmPerTest(tests: Seq[TestDefinition]) =
+  def oneForkedJvmPerTest(tests: Seq[TestDefinition]): Seq[Group] =
     tests map {
-      test => new Group(test.name, Seq(test), SubProcess(ForkOptions(runJVMOptions = Seq("-Dtest.name=" + test.name))))
+      test => Group(test.name, Seq(test), SubProcess(ForkOptions(runJVMOptions = Seq("-Dtest.name=" + test.name))))
     }
 }

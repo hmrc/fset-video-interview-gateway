@@ -13,6 +13,7 @@ import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.http.ws.{ WSDelete, WSGet, WSPost }
 import uk.gov.hmrc.whitelist.AkamaiWhitelistFilter
 import play.api.Play.current
+import uk.gov.hmrc.play.filters.MicroserviceFilterSupport
 
 import scala.concurrent.Future
 
@@ -32,21 +33,17 @@ object FrontendAuthConnector extends AuthConnector with ServicesConfig {
   lazy val http = WSHttp
 }
 
-object WhitelistFilter extends AkamaiWhitelistFilter with RunMode {
-
-  // TODO: At time of publishing this 'apply override' there was a pull request in the play-whitelist-filter project
-  // Once merged we should stop doing this apply override and use the library code
-
-  private def isCircularDestination(requestHeader: RequestHeader): Boolean =
-    requestHeader.uri == destination.url
-
-  private def toCall(rh: RequestHeader): Call =
-    Call(rh.method, rh.uri)
+object WhitelistFilter extends AkamaiWhitelistFilter with RunMode with MicroserviceFilterSupport {
 
   // Whitelist Configuration
   private def whitelistConfig(key: String): Seq[String] =
-    Some(new String(Base64.getDecoder().decode(Play.configuration.getString(key).getOrElse("")), "UTF-8"))
+    Some(new String(Base64.getDecoder.decode(Play.configuration.getString(key).getOrElse("")), "UTF-8"))
       .map(_.split(",")).getOrElse(Array.empty).toSeq
+
+  override def noHeaderAction(
+    f: (RequestHeader) => Future[Result],
+    rh: RequestHeader
+  ): Future[Result] = { f(rh) }
 
   // List of IP addresses
   override def whitelist: Seq[String] = whitelistConfig("whitelist")
@@ -58,24 +55,4 @@ object WhitelistFilter extends AkamaiWhitelistFilter with RunMode {
 
   override def destination: Call = Call("GET", "https://www.apply-civil-service-fast-stream.service.gov.uk/outage-fset-faststream/index.html")
 
-  def noHeaderAction(
-    f: (RequestHeader) => Future[Result],
-    rh: RequestHeader
-  ): Future[Result] = { f(rh) }
-
-  override def apply(f: (RequestHeader) => Future[Result])(rh: RequestHeader): Future[Result] =
-    if (excludedPaths contains toCall(rh)) {
-      f(rh)
-    } else {
-      rh.headers.get(trueClient) map {
-        ip =>
-          if (whitelist.contains(ip)) {
-            f(rh)
-          } else if (isCircularDestination(rh)) {
-            Future.successful(Forbidden)
-          } else {
-            Future.successful(Redirect(destination))
-          }
-      } getOrElse noHeaderAction(f, rh)
-    }
 }

@@ -11,7 +11,7 @@ import play.twirl.api.Html
 import uk.gov.hmrc.crypto.ApplicationCrypto
 import uk.gov.hmrc.play.audit.filters.FrontendAuditFilter
 import uk.gov.hmrc.play.config.{ AppName, ControllerConfig, RunMode }
-import uk.gov.hmrc.play.filters.{ CacheControlFilter, RecoveryFilter }
+import uk.gov.hmrc.play.filters.{ CacheControlFilter, MicroserviceFilterSupport, RecoveryFilter }
 import uk.gov.hmrc.play.filters.frontend.HeadersFilter
 import uk.gov.hmrc.play.frontend.bootstrap.DefaultFrontendGlobal
 import uk.gov.hmrc.play.frontend.filters.SessionCookieCryptoFilter
@@ -41,10 +41,6 @@ abstract class FrontendGlobal
     ApplicationCrypto.verifyConfiguration()
   }
 
-  override def onLoadConfig(config: Configuration, path: File, classloader: ClassLoader, mode: Mode): Configuration = {
-    super.onLoadConfig(config, path, classloader, mode)
-  }
-
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit rh: Request[_]): Html =
     Html("An error occurred")
 
@@ -55,12 +51,12 @@ object ControllerConfiguration extends ControllerConfig {
   lazy val controllerConfigs = Play.current.configuration.underlying.as[Config]("controllers")
 }
 
-object LoggingFilter extends FrontendLoggingFilter {
+object LoggingFilter extends FrontendLoggingFilter with MicroserviceFilterSupport {
   override def controllerNeedsLogging(controllerName: String): Boolean =
     ControllerConfiguration.paramsForController(controllerName).needsLogging
 }
 
-object AuditFilter extends FrontendAuditFilter with RunMode with AppName {
+object AuditFilter extends FrontendAuditFilter with RunMode with AppName with MicroserviceFilterSupport {
 
   override lazy val maskedFormFields = Seq("password")
 
@@ -81,4 +77,8 @@ object DevelopmentFrontendGlobal extends FrontendGlobal {
 
 object ProductionFrontendGlobal extends FrontendGlobal {
   override def filters: Seq[EssentialFilter] = WhitelistFilter +: super.filters
+}
+
+object TestFrontendGlobal extends FrontendGlobal {
+  override def filters: Seq[EssentialFilter] = WhitelistFilter :: Nil
 }

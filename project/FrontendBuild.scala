@@ -11,28 +11,27 @@ object FrontendBuild extends Build with MicroService {
 }
 
 private object Versions {
-  val microserviceBootstrapVersion  = "4.4.0"
-  val scalatest                     = "2.2.2"
-  val pegdown                       = "1.4.2"
+  val microserviceBootstrapVersion  = "5.13.0"
+  val pegdown                       = "1.5.0"
   val jsoup                         = "1.7.3"
   val wiremock                      = "1.57"
-  val hmrctest                      = "1.4.0"
-  val scalatestplus                 = "1.2.0"
+  val hmrctest                      = "2.3.0"
+  val scalatestplus                 = "1.5.1"
 }
 
 private object AppDependencies {
-  import play.PlayImport._
+  import play.sbt.PlayImport._
   import play.core.PlayVersion
   import Versions._
 
-  private val playHealthVersion = "1.1.0"
-  private val playJsonLoggerVersion = "2.1.1"
-  private val frontendBootstrapVersion = "6.6.0"
-  private val playUiVersion = "4.16.0"
-  private val playPartialsVersion = "4.5.0"
-  private val playAuthorisedFrontendVersion = "5.5.0"
-  private val playConfigVersion = "2.1.0"
-  private val playWhitelist = "1.1.0"
+  private val playHealthVersion = "2.1.0"
+  private val playLogbackLoggerVersion = "3.1.0"
+  private val frontendBootstrapVersion = "7.14.0"
+  private val playUiVersion = "7.0.0"
+  private val playPartialsVersion = "5.3.0"
+  private val playAuthorisedFrontendVersion = "6.3.0"
+  private val playConfigVersion = "4.3.0"
+  private val playWhitelist = "2.0.0"
 
   val compile = Seq(
     ws,
@@ -41,7 +40,7 @@ private object AppDependencies {
     "uk.gov.hmrc" %% "play-partials" % playPartialsVersion,
     "uk.gov.hmrc" %% "play-authorised-frontend" % playAuthorisedFrontendVersion,
     "uk.gov.hmrc" %% "play-config" % playConfigVersion,
-    "uk.gov.hmrc" %% "play-json-logger" % playJsonLoggerVersion,
+    "uk.gov.hmrc" %% "logback-json-logger" % playLogbackLoggerVersion,
     "uk.gov.hmrc" %% "play-health" % playHealthVersion,
     "uk.gov.hmrc" %% "play-ui" % playUiVersion,
     "uk.gov.hmrc" %% "play-whitelist-filter" % playWhitelist
@@ -54,8 +53,8 @@ private object AppDependencies {
   object Test {
     def apply(): Seq[ModuleID] = new TestDependencies {
       lazy val test = Seq(
-        "org.scalatest"             %% "scalatest"                % scalatest     % "test",
-        "org.scalatestplus"         %% "play"                     % scalatestplus % "test",
+        "org.mockito" % "mockito-core" % "1.8.5",
+        "org.scalatestplus.play"    %% "scalatestplus-play"       % scalatestplus % "test",
         "org.pegdown"               %  "pegdown"                  % pegdown       % "test",
         "org.jsoup"                 %  "jsoup"                    % jsoup         % "test",
         "com.github.tomakehurst"    %  "wiremock"                 % wiremock      % "test",
