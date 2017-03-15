@@ -78,3 +78,7 @@ object DevelopmentFrontendGlobal extends FrontendGlobal {
 object ProductionFrontendGlobal extends FrontendGlobal {
   override def filters: Seq[EssentialFilter] = WhitelistFilter +: super.filters
 }
+
+object TestFrontendGlobal extends FrontendGlobal {
+  override def filters: Seq[EssentialFilter] = WhitelistFilter :: Nil
+}

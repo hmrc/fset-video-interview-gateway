@@ -2,8 +2,7 @@ package uk.gov.hmrc.fsetlaunchpadgateway.config
 
 import java.util.Base64
 
-import org.scalatest.TestData
-import org.scalatestplus.play.{ OneAppPerTest, PlaySpec }
+import org.scalatestplus.play.{ OneAppPerSuite, PlaySpec }
 import play.api.{ Application, Mode }
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers._
@@ -11,13 +10,13 @@ import play.api.test._
 
 import language.implicitConversions
 
-class WhitelistFilterConfigSpec extends PlaySpec with OneAppPerTest {
+class WhitelistFilterConfigSpec extends PlaySpec with OneAppPerSuite {
 
-  override def newAppForTest(td: TestData): Application = new GuiceApplicationBuilder()
+  override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .configure(
       "whitelistExcludedCalls" -> Base64.getEncoder.encodeToString("/ping/ping,/healthcheck".getBytes),
       "whitelist" -> Base64.getEncoder.encodeToString("11.22.33.44".getBytes)
-    ).global(ProductionFrontendGlobal).in(Mode.Test).build()
+    ).global(TestFrontendGlobal).in(Mode.Test).build()
 
   "FrontendAppConfig" must {
     "return a valid config item" when {
