@@ -11,7 +11,7 @@ object FrontendBuild extends Build with MicroService {
 }
 
 private object Versions {
-  val microserviceBootstrapVersion  = "5.13.0"
+  val microserviceBootstrapVersion  = "5.14.0"
   val pegdown                       = "1.5.0"
   val jsoup                         = "1.7.3"
   val wiremock                      = "1.57"
@@ -26,7 +26,7 @@ private object AppDependencies {
 
   private val playHealthVersion = "2.1.0"
   private val playLogbackLoggerVersion = "3.1.0"
-  private val frontendBootstrapVersion = "7.14.0"
+  private val frontendBootstrapVersion = "7.19.0"
   private val playUiVersion = "7.0.0"
   private val playPartialsVersion = "5.3.0"
   private val playAuthorisedFrontendVersion = "6.3.0"
