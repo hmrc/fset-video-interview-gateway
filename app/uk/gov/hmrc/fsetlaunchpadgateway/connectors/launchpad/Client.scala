@@ -6,8 +6,7 @@ import java.util.Base64
 
 import play.api.Logger
 import play.api.libs.json.Format
-import uk.gov.hmrc.fsetlaunchpadgateway.config.WSHttp
-import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
+import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp, WSHttpExternal }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ContainsSensitiveData
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.interview.Question
@@ -28,7 +27,7 @@ object Client {
 }
 
 trait Client {
-  val http: WSHttp = WSHttp
+  val http: WSHttp = WSHttpExternal
 
   val path: String
 

@@ -3,22 +3,27 @@ package uk.gov.hmrc.fsetlaunchpadgateway.config
 import java.util.Base64
 
 import play.api.Play
-import play.api.mvc.Results._
+import play.api.Play.current
+import play.api.libs.ws.WSProxyServer
 import play.api.mvc.{ Call, RequestHeader, Result }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.ws.WSPutWithForms
 import uk.gov.hmrc.play.audit.http.config.LoadAuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.{ AuditConnector => Auditing }
 import uk.gov.hmrc.play.config.{ AppName, RunMode, ServicesConfig }
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import uk.gov.hmrc.play.http.ws.{ WSDelete, WSGet, WSPost }
-import uk.gov.hmrc.whitelist.AkamaiWhitelistFilter
-import play.api.Play.current
 import uk.gov.hmrc.play.filters.MicroserviceFilterSupport
+import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
+import uk.gov.hmrc.play.http.ws._
+import uk.gov.hmrc.whitelist.AkamaiWhitelistFilter
 
 import scala.concurrent.Future
 
 object FrontendAuditConnector extends Auditing with AppName {
   override lazy val auditingConfig = LoadAuditingConfig(s"auditing")
+}
+
+object WSHttpExternal extends WSHttp with WSProxy with RunMode {
+  override val hooks = NoneRequired
+  override def wsProxyServer: Option[WSProxyServer] = WSProxyConfiguration(s"$env.proxy")
 }
 
 object WSHttp extends WSHttp {
