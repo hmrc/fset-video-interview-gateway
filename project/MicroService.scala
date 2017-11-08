@@ -38,6 +38,7 @@ trait MicroService {
     .settings(defaultSettings(): _*)
     .settings(
       targetJvm := "jvm-1.8",
+      scalaVersion := "2.11.11",
       libraryDependencies ++= appDependencies,
       routesGenerator := StaticRoutesGenerator,
       parallelExecution in Test := false,

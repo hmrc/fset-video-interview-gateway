@@ -4,10 +4,10 @@ import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.InterviewClient._
 import play.api.http.Status._
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.interview._
-import uk.gov.hmrc.play.http.HttpResponse
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import uk.gov.hmrc.http.HttpResponse
 
 object InterviewClient extends InterviewClient {
   override val path = "interviews"

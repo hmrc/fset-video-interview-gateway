@@ -10,9 +10,9 @@ import play.api.test.{ FakeHeaders, FakeRequest, Helpers }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects._
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects.reviewed.ReviewedCallbackRequest
-import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HeaderCarrier
 
 class CallbackControllerSpec extends BaseControllerSpec with OneAppPerSuite {
   "Callback Controller#present" should {

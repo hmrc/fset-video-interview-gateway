@@ -3,13 +3,13 @@ package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.ws
 import play.api.http.HttpVerbs._
 import play.api.libs.json.{ Json, Writes }
 import play.api.http.HttpVerbs.{ PUT => PUT_VERB }
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpPut, HttpReads, HttpResponse }
 import uk.gov.hmrc.play.http.ws.{ WSHttpResponse, WSPut, WSRequest }
+
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import scala.concurrent.Future
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpPut, HttpReads, HttpResponse }
 
-trait WSPutWithForms extends WSPut {
+trait WSPutWithForms extends HttpPut with WSPut {
   def doFormPut(url: String, body: Map[String, Seq[String]])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     buildRequest(url).put(body).map(new WSHttpResponse(_))
   }

@@ -1,9 +1,9 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.account.{ CreateRequest, UpdateRequest }
-import uk.gov.hmrc.play.http.HttpResponse
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HttpResponse
 
 object AccountClient extends AccountClient {
   override val path = "accounts"

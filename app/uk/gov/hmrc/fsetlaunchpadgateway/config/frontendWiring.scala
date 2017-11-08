@@ -7,15 +7,16 @@ import play.api.Play.current
 import play.api.libs.ws.WSProxyServer
 import play.api.mvc.{ Call, RequestHeader, Result }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.ws.WSPutWithForms
-import uk.gov.hmrc.play.audit.http.config.LoadAuditingConfig
+import uk.gov.hmrc.http.{ HttpDelete, HttpGet, HttpPost, HttpPut }
 import uk.gov.hmrc.play.audit.http.connector.{ AuditConnector => Auditing }
 import uk.gov.hmrc.play.config.{ AppName, RunMode, ServicesConfig }
-import uk.gov.hmrc.play.filters.MicroserviceFilterSupport
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.http.ws._
 import uk.gov.hmrc.whitelist.AkamaiWhitelistFilter
 
 import scala.concurrent.Future
+import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
+import uk.gov.hmrc.play.microservice.filters.MicroserviceFilterSupport
 
 object FrontendAuditConnector extends Auditing with AppName {
   override lazy val auditingConfig = LoadAuditingConfig(s"auditing")
@@ -30,8 +31,8 @@ object WSHttp extends WSHttp {
   override val hooks = NoneRequired
 }
 
-trait WSHttp extends WSGet with WSPutWithForms with WSPost with WSDelete with AppName with RunMode {
-}
+trait WSHttp extends HttpGet with WSGet
+  with WSPutWithForms with HttpPost with WSPost with HttpDelete with WSDelete with HttpPut with AppName with RunMode
 
 object FrontendAuthConnector extends AuthConnector with ServicesConfig {
   val serviceUrl = baseUrl("auth")

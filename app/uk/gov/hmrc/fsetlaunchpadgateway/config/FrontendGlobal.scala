@@ -9,13 +9,9 @@ import play.api.mvc.{ EssentialFilter, Request }
 import play.api.{ Mode => _, _ }
 import play.twirl.api.Html
 import uk.gov.hmrc.crypto.ApplicationCrypto
-import uk.gov.hmrc.play.audit.filters.FrontendAuditFilter
 import uk.gov.hmrc.play.config.{ AppName, ControllerConfig, RunMode }
-import uk.gov.hmrc.play.filters.{ CacheControlFilter, MicroserviceFilterSupport, RecoveryFilter }
-import uk.gov.hmrc.play.filters.frontend.HeadersFilter
+import uk.gov.hmrc.play.frontend.filters._
 import uk.gov.hmrc.play.frontend.bootstrap.DefaultFrontendGlobal
-import uk.gov.hmrc.play.frontend.filters.SessionCookieCryptoFilter
-import uk.gov.hmrc.play.http.logging.filters.FrontendLoggingFilter
 
 abstract class FrontendGlobal
   extends DefaultFrontendGlobal {

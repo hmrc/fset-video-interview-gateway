@@ -11,11 +11,11 @@ import play.api.libs.json.{ Json, Reads }
 import uk.gov.hmrc.fsetlaunchpadgateway.config.WSHttp
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ContainsSensitiveData
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpReads, HttpResponse }
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
 
 case class ClientTestException(message: String, stringsToRemove: List[String]) extends SanitizedClientException(message, stringsToRemove)
 
@@ -120,7 +120,7 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
     val wsHttpMock: WSHttp = mock[WSHttp]
 
     lazy val successfulPostResponseTestClient = makeClient {
-      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier]())).thenReturn {
+      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
         Future.successful(
           HttpResponse(200, Some(
             Json.parse(
@@ -137,7 +137,7 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
     }
 
     lazy val malformedPostResponseTestClient = makeClient {
-      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier]())).thenReturn {
+      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
         Future.successful(
           HttpResponse(200, Some(
             Json.parse(
@@ -152,7 +152,7 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
     }
 
     lazy val malformedPostResponseContentTestClient = makeClient {
-      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier]())).thenReturn {
+      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
         Future.successful(
           HttpResponse(200, Some(
             Json.parse(
@@ -169,7 +169,7 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
     }
 
     lazy val non200TestClient = makeClient {
-      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier]())).thenReturn {
+      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
         Future.successful(
           HttpResponse(502, Some(
             Json.parse(

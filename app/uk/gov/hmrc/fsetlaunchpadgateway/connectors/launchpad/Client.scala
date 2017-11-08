@@ -10,12 +10,12 @@ import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp, WSHt
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ContainsSensitiveData
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.interview.Question
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 object Client {
   abstract class SanitizedClientException(message: String, stringsToRemove: List[String])
