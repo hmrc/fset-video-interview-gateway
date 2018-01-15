@@ -1,8 +1,8 @@
-# FSET Launchpad Gateway
+# FSET Video Interview Gateway
 
-[![Build Status](https://travis-ci.org/hmrc/fset-launchpad-gateway.svg)](https://travis-ci.org/hmrc/fset-launchpad-gateway) [ ![Download](https://api.bintray.com/packages/hmrc/releases/fset-launchpad-gateway/images/download.svg) ](https://bintray.com/hmrc/releases/fset-launchpad-gateway/_latestVersion)
+[![Build Status](https://travis-ci.org/hmrc/fset-video-interview-gateway.svg)](https://travis-ci.org/hmrc/fset-video-interview-gateway) [ ![Download](https://api.bintray.com/packages/hmrc/releases/fset-video-interview-gateway/images/download.svg) ](https://bintray.com/hmrc/releases/fset-video-interview-gateway/_latestVersion)
 
-Launchpadrecruits.com is a company that the FSET team use to present candidates with a "video interview". The Launchpad Gateway is the component responsible for communicating with Launchpad. FSET will use the gateway to send information to Launchpad as well as receive information from them via API calls.
+Launchpadrecruits.com is a company that the FSET team use to present candidates with a "video interview". The Video Interview Gateway is the component responsible for communicating with Launchpad. FSET will use the gateway to send information to Launchpad as well as receive information from them via API calls.
 
 ## Application Configuration
 

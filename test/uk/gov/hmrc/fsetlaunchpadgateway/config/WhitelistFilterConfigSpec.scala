@@ -32,14 +32,14 @@ class WhitelistFilterConfigSpec extends PlaySpec with OneAppPerSuite {
   "ProductionFrontendGlobal" must {
     "let requests past" when {
       "coming from an IP in the white list must work as normal" in {
-        val request = FakeRequest(POST, "/fset-launchpad-gateway/faststream/callback").withHeaders("True-Client-IP" -> "11.22.33.44")
+        val request = FakeRequest(POST, "/fset-video-interview-gateway/faststream/callback").withHeaders("True-Client-IP" -> "11.22.33.44")
         val Some(result) = route(app, request)
 
         status(result) mustBe BAD_REQUEST
       }
 
       "coming from a IP NOT in the white-list and not with a white-listed path must be redirected" in {
-        val request = FakeRequest(POST, "/fset-launchpad-gateway/faststream/callback").withHeaders("True-Client-IP" -> "93.00.33.33")
+        val request = FakeRequest(POST, "/fset-video-interview-gateway/faststream/callback").withHeaders("True-Client-IP" -> "93.00.33.33")
         val Some(result) = route(app, request)
 
         status(result) mustBe SEE_OTHER
@@ -54,7 +54,7 @@ class WhitelistFilterConfigSpec extends PlaySpec with OneAppPerSuite {
       }
 
       "coming without an Akamai IP header must succeed (like an internal service calling the gateway)" in {
-        val request = FakeRequest(POST, "/fset-launchpad-gateway/faststream/callback")
+        val request = FakeRequest(POST, "/fset-video-interview-gateway/faststream/callback")
         val Some(result) = route(app, request)
 
         status(result) mustBe BAD_REQUEST
