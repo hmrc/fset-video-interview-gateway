@@ -24,7 +24,7 @@ trait AccountClient extends Client {
   }
 
   def updateAccount(accountId: Int, updateRequest: UpdateRequest): Future[HttpResponse] = {
-    // https://www-qa.tax.service.gov.uk/fset-launchpad-gateway/callback
+    // https://www-qa.tax.service.gov.uk/fset-video-interview-gateway/callback
     put(s"$apiBaseUrl/$path/$accountId", caseClassToTuples(updateRequest))
   }
 

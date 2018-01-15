@@ -5,7 +5,7 @@ import uk.gov.hmrc.versioning.SbtGitVersioning
 
 object FrontendBuild extends Build with MicroService {
 
-  val appName = "fset-launchpad-gateway"
+  val appName = "fset-video-interview-gateway"
 
   override lazy val appDependencies: Seq[ModuleID] = AppDependencies()
 }

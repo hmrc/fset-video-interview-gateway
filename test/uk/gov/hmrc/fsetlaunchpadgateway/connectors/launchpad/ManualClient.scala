@@ -124,7 +124,7 @@ Some(true),
 Some(true),
 "http://civilserviceresourcing.havaspeople.com/uploads/1/6/7/6/16763152/517385.png",
 None,
-"https://www-staging.tax.service.gov.uk/fset-launchpad-gateway/callback",
+"https://www-staging.tax.service.gov.uk/fset-video-interview-gateway/callback",
 None,
 Some(true),
 None
