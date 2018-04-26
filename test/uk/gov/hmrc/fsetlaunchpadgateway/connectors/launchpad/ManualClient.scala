@@ -28,10 +28,7 @@ class ManualClient extends UnitSpec with OneServerPerTest {
 
       Logger.warn("Sending request...")
 
-      val theRequest = AccountClient.updateAccount(
-        accountId.get, UpdateRequest(
-        Some(FrontendAppConfig.launchpadApiConfig.callbackUrl)
-      ))
+      val theRequest = AccountClient.getSpecific(accountId.get)
 
       // TODO: This should be a mapped future
       val response = Await.result(theRequest, 30 seconds)
