@@ -1,2 +1,7 @@
 digital-service: "FSET: Faststream"
 type: service
+
+leakDetectionExemptions:
+ - ruleId: 'ip_addresses'
+   filePaths:
+      - '/test/uk/gov/hmrc/fsetlaunchpadgateway/config/WhitelistFilterConfigSpec.scala'
