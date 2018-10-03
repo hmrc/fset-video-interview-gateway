@@ -20,8 +20,6 @@ trait MicroService {
   import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
   import scalariform.formatter.preferences._
 
-  //import TestPhases._
-
   val appName: String
 
   val appDependencies : Seq[ModuleID]
