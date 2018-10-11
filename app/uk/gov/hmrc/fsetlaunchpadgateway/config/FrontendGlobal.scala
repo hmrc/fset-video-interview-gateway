@@ -1,17 +1,14 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.config
 
-import java.io.File
-
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
-import play.api.Mode._
 import play.api.mvc.{ EssentialFilter, Request }
 import play.api.{ Mode => _, _ }
 import play.twirl.api.Html
 import uk.gov.hmrc.crypto.ApplicationCrypto
-import uk.gov.hmrc.play.config.{ AppName, ControllerConfig, RunMode }
-import uk.gov.hmrc.play.frontend.filters._
+import uk.gov.hmrc.play.config.{ AppName, ControllerConfig }
 import uk.gov.hmrc.play.frontend.bootstrap.DefaultFrontendGlobal
+import uk.gov.hmrc.play.frontend.filters._
 
 abstract class FrontendGlobal
   extends DefaultFrontendGlobal {
@@ -40,7 +37,7 @@ abstract class FrontendGlobal
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit rh: Request[_]): Html =
     Html("An error occurred")
 
-  override def microserviceMetricsConfig(implicit app: Application): Option[Configuration] = app.configuration.getConfig(s"microservice.metrics")
+  override def microserviceMetricsConfig(implicit app: Application): Option[Configuration] = app.configuration.getConfig("microservice.metrics")
 }
 
 object ControllerConfiguration extends ControllerConfig {
@@ -52,7 +49,7 @@ object LoggingFilter extends FrontendLoggingFilter with MicroserviceFilterSuppor
     ControllerConfiguration.paramsForController(controllerName).needsLogging
 }
 
-object AuditFilter extends FrontendAuditFilter with RunMode with AppName with MicroserviceFilterSupport {
+object AuditFilter extends FrontendAuditFilter with AppName with MicroserviceFilterSupport {
 
   override lazy val maskedFormFields = Seq("password")
 

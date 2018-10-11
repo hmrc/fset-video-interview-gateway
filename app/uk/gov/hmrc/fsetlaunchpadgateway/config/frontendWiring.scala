@@ -9,7 +9,7 @@ import play.api.mvc.{ Call, RequestHeader, Result }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.ws.WSPutWithForms
 import uk.gov.hmrc.http.{ HttpDelete, HttpGet, HttpPost, HttpPut }
 import uk.gov.hmrc.play.audit.http.connector.{ AuditConnector => Auditing }
-import uk.gov.hmrc.play.config.{ AppName, RunMode, ServicesConfig }
+import uk.gov.hmrc.play.config.{ AppName, ServicesConfig }
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.http.ws._
 import uk.gov.hmrc.whitelist.AkamaiWhitelistFilter
@@ -22,9 +22,9 @@ object FrontendAuditConnector extends Auditing with AppName {
   override lazy val auditingConfig = LoadAuditingConfig(s"auditing")
 }
 
-object WSHttpExternal extends WSHttp with WSProxy with RunMode {
+object WSHttpExternal extends WSHttp with WSProxy {
   override val hooks = NoneRequired
-  override def wsProxyServer: Option[WSProxyServer] = WSProxyConfiguration(s"$env.proxy")
+  override def wsProxyServer: Option[WSProxyServer] = WSProxyConfiguration("proxy")
 }
 
 object WSHttp extends WSHttp {
@@ -32,14 +32,14 @@ object WSHttp extends WSHttp {
 }
 
 trait WSHttp extends HttpGet with WSGet
-  with WSPutWithForms with HttpPost with WSPost with HttpDelete with WSDelete with HttpPut with AppName with RunMode
+  with WSPutWithForms with HttpPost with WSPost with HttpDelete with WSDelete with HttpPut with AppName
 
 object FrontendAuthConnector extends AuthConnector with ServicesConfig {
   val serviceUrl = baseUrl("auth")
   lazy val http = WSHttp
 }
 
-object WhitelistFilter extends AkamaiWhitelistFilter with RunMode with MicroserviceFilterSupport {
+object WhitelistFilter extends AkamaiWhitelistFilter with MicroserviceFilterSupport {
 
   // Whitelist Configuration
   private def whitelistConfig(key: String): Seq[String] =
@@ -60,5 +60,4 @@ object WhitelistFilter extends AkamaiWhitelistFilter with RunMode with Microserv
   }
 
   override def destination: Call = Call("GET", "https://www.apply-civil-service-fast-stream.service.gov.uk/outage-fset-faststream/index.html")
-
 }
