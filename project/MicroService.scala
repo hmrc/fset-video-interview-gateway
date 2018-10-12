@@ -12,7 +12,7 @@ trait MicroService {
 
   import uk.gov.hmrc._
   import DefaultBuildSettings.{scalaSettings,defaultSettings,targetJvm,addTestReportOption}
-  import uk.gov.hmrc.{SbtBuildInfo, ShellPrompt, SbtAutoBuildPlugin}
+  import uk.gov.hmrc.SbtAutoBuildPlugin
   import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
   import uk.gov.hmrc.versioning.SbtGitVersioning
 
@@ -23,13 +23,13 @@ trait MicroService {
   val appName: String
 
   val appDependencies : Seq[ModuleID]
-  lazy val plugins : Seq[Plugins] = Seq(SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
+  lazy val plugins : Seq[Plugins] = Seq.empty
   lazy val playSettings : Seq[Setting[_]] = Seq.empty
 
   lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
 
   lazy val microservice = Project(appName, file("."))
-    .enablePlugins(Seq(play.sbt.PlayScala,SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin) ++ plugins : _*)
+    .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory) ++ plugins : _*)
     .settings(majorVersion := 0)
     .settings(playSettings : _*)
     .settings(scalaSettings: _*)
