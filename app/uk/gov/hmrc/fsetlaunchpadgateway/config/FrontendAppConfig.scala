@@ -7,7 +7,8 @@ import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig.{ FaststreamApi
 import uk.gov.hmrc.play.config.ServicesConfig
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
-import play.api.Play
+import play.api.Mode.Mode
+import play.api.{ Configuration, Play }
 
 trait FrontendAppConfig {
   val faststreamApiConfig: FaststreamApiConfig
@@ -17,6 +18,10 @@ trait FrontendAppConfig {
 }
 
 object FrontendAppConfig extends FrontendAppConfig with ServicesConfig {
+
+  override def mode: Mode = Play.current.mode
+
+  override def runModeConfiguration: Configuration = Play.current.configuration
 
   case class LaunchpadApiConfig(
     extensionValidUserEmailAddress: String,

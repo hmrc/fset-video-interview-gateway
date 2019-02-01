@@ -5,7 +5,6 @@ import net.ceedubs.ficus.Ficus._
 import play.api.mvc.{ EssentialFilter, Request }
 import play.api.{ Mode => _, _ }
 import play.twirl.api.Html
-import uk.gov.hmrc.crypto.ApplicationCrypto
 import uk.gov.hmrc.play.config.{ AppName, ControllerConfig }
 import uk.gov.hmrc.play.frontend.bootstrap.DefaultFrontendGlobal
 import uk.gov.hmrc.play.frontend.filters._
@@ -21,7 +20,7 @@ abstract class FrontendGlobal
   override lazy val defaultFrontendFilters: Seq[EssentialFilter] = Seq(
     metricsFilter,
     HeadersFilter,
-    SessionCookieCryptoFilter,
+    sessionCookieCryptoFilter,
     deviceIdFilter,
     loggingFilter,
     frontendAuditFilter,
@@ -31,7 +30,7 @@ abstract class FrontendGlobal
 
   override def onStart(app: Application) {
     super.onStart(app)
-    ApplicationCrypto.verifyConfiguration()
+    applicationCrypto.verifyConfiguration()
   }
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit rh: Request[_]): Html =
@@ -59,6 +58,8 @@ object AuditFilter extends FrontendAuditFilter with AppName with MicroserviceFil
 
   override def controllerNeedsAuditing(controllerName: String): Boolean =
     ControllerConfiguration.paramsForController(controllerName).needsAuditing
+
+  override def appNameConfiguration: Configuration = Play.current.configuration
 }
 
 object DevelopmentFrontendGlobal extends FrontendGlobal {
