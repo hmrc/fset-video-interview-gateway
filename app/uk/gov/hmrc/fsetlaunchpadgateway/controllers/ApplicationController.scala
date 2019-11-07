@@ -25,11 +25,38 @@ trait ApplicationController extends BaseController {
   val interviewClient: InterviewClient
   val applicationClient: ApplicationClient
 
+  object Operations {
+    sealed abstract class Operation {
+      def name: String
+    }
+
+    case object CreateCandidate extends Operation {
+      override def name: String = "createCandidate"
+    }
+
+    case object InviteCandidate extends Operation {
+      override def name: String = "inviteCandidate"
+    }
+
+    case object ResetCandidate extends Operation {
+      override def name: String = "resetCandidate"
+    }
+
+    case object RetakeCandidate extends Operation {
+      override def name: String = "retakeCandidate"
+    }
+
+    case object ExtendCandidate extends Operation {
+      override def name: String = "extendCandidate"
+    }
+  }
+
   val launchpadAccountId = Some(FrontendAppConfig.launchpadApiConfig.accountId)
   val employerEmail = FrontendAppConfig.launchpadApiConfig.extensionValidUserEmailAddress
 
   def createCandidate(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[CreateCandidateRequest] { cc =>
+      val jsonBody = request.body
       candidateClient.create(
         candidate.CreateRequest(
           launchpadAccountId,
@@ -40,12 +67,13 @@ trait ApplicationController extends BaseController {
         )
       ).map { createResponse =>
           Ok(Json.toJson(CreateCandidateResponse.fromResponse(createResponse)))
-        }.recover(recoverFromBadCall)
+        }.recover(recoverFromBadCall(Operations.CreateCandidate, jsonBody))
     }
   }
 
   def inviteCandidate(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[InviteCandidateRequest] { ic =>
+      val jsonBody = request.body
       interviewClient.seamlessLoginInvite(
         launchpadAccountId,
         ic.interviewId,
@@ -58,47 +86,50 @@ trait ApplicationController extends BaseController {
         )
       ).map { seamlessLoginInviteResponse =>
           Ok(Json.toJson(InviteCandidateResponse.fromResponse(seamlessLoginInviteResponse)))
-        }.recover(recoverFromBadCall)
+        }.recover(recoverFromBadCall(Operations.InviteCandidate, jsonBody))
     }
   }
 
   def resetCandidate(): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    withJsonBody[ResetApplicantRequest] { request =>
+    withJsonBody[ResetApplicantRequest] { resetRequest =>
+      val jsonBody = request.body
       applicationClient.reset(
         application.ResetRequest(
-          interview_id = request.interviewId,
+          interview_id = resetRequest.interviewId,
           account_id = launchpadAccountId,
-          deadline = request.newDeadline.toString("yyyy-MM-dd"),
+          deadline = resetRequest.newDeadline.toString("yyyy-MM-dd"),
           employer_email = employerEmail,
           send_email = false
         ),
-        request.candidateId
+        resetRequest.candidateId
       ).map { resetResponse =>
           Ok(Json.toJson(ResetApplicantResponse.fromResponse(resetResponse)))
-        }.recover(recoverFromBadResetOrRetakeCall)
+        }.recover(recoverFromBadResetOrRetakeCall(Operations.ResetCandidate, jsonBody))
     }
   }
 
   def retakeCandidate(): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    withJsonBody[RetakeApplicantRequest] { request =>
+    withJsonBody[RetakeApplicantRequest] { retakeRequest =>
       {
+        val jsonBody = request.body
         applicationClient.retake(
           application.RetakeRequest(
-            interview_id = request.interviewId,
+            interview_id = retakeRequest.interviewId,
             account_id = launchpadAccountId,
-            deadline = request.newDeadline.toString("yyyy-MM-dd"),
+            deadline = retakeRequest.newDeadline.toString("yyyy-MM-dd"),
             employer_email = employerEmail,
             send_email = false
           ),
-          request.candidateId
+          retakeRequest.candidateId
         ).map { retakeResponse => Ok(Json.toJson(RetakeApplicantResponse.fromResponse(retakeResponse)))
-          }.recover(recoverFromBadResetOrRetakeCall)
+          }.recover(recoverFromBadResetOrRetakeCall(Operations.RetakeCandidate, jsonBody))
       }
     }
   }
 
   def extendCandidate(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[ExtendCandidateRequest] { ec =>
+      val jsonBody = request.body
       candidateClient.extendDeadline(
         ec.candidateId,
         candidate.ExtendDeadlineRequest(
@@ -110,22 +141,24 @@ trait ApplicationController extends BaseController {
         )
       ).map { _ =>
           Ok
-        }.recover(recoverFromBadCall)
+        }.recover(recoverFromBadCall(Operations.ExtendCandidate, jsonBody))
     }
   }
 
-  private def recoverFromBadCall: PartialFunction[Throwable, Result] = {
+  private def recoverFromBadCall(operation: Operations.Operation, request: JsValue): PartialFunction[Throwable, Result] = {
     case e: Throwable =>
-      Logger.warn(s"Error communicating with launchpad: ${e.getMessage}. Stacktrace: ${e.getStackTrace}")
+      Logger.warn(s"Error communicating with launchpad for operation:${operation.name}. Request:$request. " +
+        s"Error:${e.getMessage}. Stacktrace:${e.getStackTrace}.")
       InternalServerError("Error communicating with Launchpad")
   }
 
-  private def recoverFromBadResetOrRetakeCall: PartialFunction[Throwable, Result] = {
+  private def recoverFromBadResetOrRetakeCall(operation: Operations.Operation, request: JsValue): PartialFunction[Throwable, Result] = {
     case e: Throwable =>
-      Logger.warn(s"Error communicating with launchpad: ${e.getMessage}. Stacktrace: ${e.getStackTrace}")
+      Logger.warn(s"Error communicating with launchpad for operation:${operation.name}. Request:$request. " +
+        s"Error: ${e.getMessage}. Stacktrace: ${e.getStackTrace}")
       if (e.getMessage.contains("Interview ID and/or Candidate ID are invalid") ||
         e.getMessage.contains("Candidate is not applicable for application reset")) {
-        Conflict("Video interview cannot be reseted due to being in an unresetable state.")
+        Conflict("Video interview cannot be reset due to being in an unresetable state.")
       } else {
         InternalServerError("Error communicating with Launchpad")
       }
