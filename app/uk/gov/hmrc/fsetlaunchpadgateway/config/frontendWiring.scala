@@ -2,6 +2,7 @@ package uk.gov.hmrc.fsetlaunchpadgateway.config
 
 import java.util.Base64
 
+import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import play.api.Mode.Mode
 import play.api.{ Configuration, Play }
@@ -38,6 +39,7 @@ trait WSHttp extends HttpGet with WSGet
   with WSPutWithForms with HttpPost with WSPost with HttpDelete with WSDelete with HttpPut with AppName {
   override def appNameConfiguration: Configuration = Play.current.configuration
   override val configuration: Option[Config] = Option(Play.current.configuration.underlying)
+  override def actorSystem: ActorSystem = Play.current.actorSystem
 }
 
 object FrontendAuthConnector extends AuthConnector with ServicesConfig {

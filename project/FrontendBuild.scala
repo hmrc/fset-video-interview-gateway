@@ -11,10 +11,8 @@ object FrontendBuild extends Build with MicroService {
 }
 
 private object Versions {
-  val hmrcFrontendBootstrapVersion      = "11.3.0"
-//  val hmrcFrontendBootstrapVersion      = "10.4.0"
-  val hmrcMicroserviceBootstrapVersion  = "9.1.0"
-//  val hmrcMicroserviceBootstrapVersion  = "8.3.0"
+  val hmrcFrontendBootstrapVersion      = "12.9.0"
+  val hmrcMicroserviceBootstrapVersion  = "10.6.0"
   val hmrcPlayPartialsVersion           = "6.1.0"
   val hmrcPlayAuthorisedFrontendVersion = "7.1.0"
 //  val hmrcPlayAuthorisedFrontendVersion = "7.0.0"
