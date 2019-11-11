@@ -56,7 +56,9 @@ trait ApplicationController extends BaseController {
 
   def createCandidate(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[CreateCandidateRequest] { cc =>
-      val jsonBody = request.body
+      val obfuscatedJsonBody = Json.toJson(CreateCandidateRequest(
+        email = "HIDDEN", customCandidateId = cc.customCandidateId, firstName = "HIDDEN", lastName = "HIDDEN"
+      ))
       candidateClient.create(
         candidate.CreateRequest(
           launchpadAccountId,
@@ -67,7 +69,7 @@ trait ApplicationController extends BaseController {
         )
       ).map { createResponse =>
           Ok(Json.toJson(CreateCandidateResponse.fromResponse(createResponse)))
-        }.recover(recoverFromBadCall(Operations.CreateCandidate, jsonBody))
+        }.recover(recoverFromBadCall(Operations.CreateCandidate, obfuscatedJsonBody))
     }
   }
 
@@ -147,14 +149,14 @@ trait ApplicationController extends BaseController {
 
   private def recoverFromBadCall(operation: Operations.Operation, request: JsValue): PartialFunction[Throwable, Result] = {
     case e: Throwable =>
-      Logger.warn(s"Error communicating with launchpad for operation:${operation.name}. Request:$request. " +
-        s"Error:${e.getMessage}. Stacktrace:${e.getStackTrace}.")
+      Logger.warn(s"Error communicating with launchpad for operation ${operation.name}. Request: $request. " +
+        s"Error: ${e.getMessage}. Stacktrace: ${e.getStackTrace}.")
       InternalServerError("Error communicating with Launchpad")
   }
 
   private def recoverFromBadResetOrRetakeCall(operation: Operations.Operation, request: JsValue): PartialFunction[Throwable, Result] = {
     case e: Throwable =>
-      Logger.warn(s"Error communicating with launchpad for operation:${operation.name}. Request:$request. " +
+      Logger.warn(s"Error communicating with launchpad for operation ${operation.name}. Request: $request. " +
         s"Error: ${e.getMessage}. Stacktrace: ${e.getStackTrace}")
       if (e.getMessage.contains("Interview ID and/or Candidate ID are invalid") ||
         e.getMessage.contains("Candidate is not applicable for application reset")) {
