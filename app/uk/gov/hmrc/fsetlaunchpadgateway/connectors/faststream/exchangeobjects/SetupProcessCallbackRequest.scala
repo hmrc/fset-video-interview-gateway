@@ -3,6 +3,7 @@ package uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects
 import org.joda.time.{ DateTime, LocalDate }
 import play.api.libs.json.Json
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback.SetupProcessCallback
+import uk.gov.hmrc.fsetlaunchpadgateway.models.commands.FaststreamImplicits._
 
 case class SetupProcessCallbackRequest(received: DateTime, candidateId: String, customCandidateId: String, interviewId: Int,
   customInterviewId: Option[String], customInviteId: String, status: String, deadline: LocalDate)

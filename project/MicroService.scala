@@ -39,9 +39,9 @@ trait MicroService {
       targetJvm := "jvm-1.8",
       scalaVersion := "2.11.11",
       libraryDependencies ++= appDependencies,
-      routesGenerator := StaticRoutesGenerator,
       parallelExecution in Test := false,
-      fork in Test := false,
+      fork in Test := true,
+      javaOptions in Test += "-Dlogger.resource=logback-test.xml",
       retrieveManaged := true,
       evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
       scalacOptions += "-feature",
@@ -49,7 +49,7 @@ trait MicroService {
       scalacOptions in (Compile, compile) += "-Ywarn-value-discard"
     )
     .configs(IntegrationTest)
-    .settings(inConfig(IntegrationTest)(Defaults.testSettings) : _*)
+    .settings(inConfig(IntegrationTest)(sbt.Defaults.testSettings) : _*)
     .settings(scalariformSettings: _*)
     .settings(ScalariformKeys.preferences := ScalariformKeys.preferences.value
       .setPreference(FormatXml, false)

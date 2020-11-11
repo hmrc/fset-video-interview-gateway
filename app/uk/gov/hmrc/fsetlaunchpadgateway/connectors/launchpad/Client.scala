@@ -11,7 +11,7 @@ import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedCli
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ContainsSensitiveData
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.interview.Question
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
@@ -26,12 +26,8 @@ object Client {
   }
 }
 
-trait Client {
-  val http: WSHttp = WSHttpExternal
-
-  val path: String
-
-  val apiBaseUrl = FrontendAppConfig.launchpadApiConfig.baseUrl
+abstract class Client(http: WSHttp, val path: String, config: FrontendAppConfig)(implicit val ec: ExecutionContext) {
+  val apiBaseUrl = config.launchpadApiConfig.baseUrl
 
   // TODO: This whole method is grimy. Done quickly for the spike, needs to perhaps do something clever with QueryStringBindable in play instead
   def caseClassToTuples(cc: Product, isList: Boolean = false): Seq[(String, String)] = {
@@ -89,7 +85,7 @@ trait Client {
 
   protected def getAuthHeaders: Seq[(String, String)] = {
     val basicAuthEncodedStr = Base64.getEncoder
-      .encodeToString(s"${FrontendAppConfig.launchpadApiConfig.key}:passworddoesnotmatter".getBytes(StandardCharsets.UTF_8))
+      .encodeToString(s"${config.launchpadApiConfig.key}:passworddoesnotmatter".getBytes(StandardCharsets.UTF_8))
 
     Seq(
       "Authorization" -> s"Basic $basicAuthEncodedStr",
@@ -102,7 +98,20 @@ trait Client {
     postUrl: String,
     exceptionOnFailure: => (String, List[String]) => E
   )(implicit jsonFormat: Format[R]): Future[R] = {
-
+    // TODO: This code is assuming that when there is an error calling launchpad
+    // (BAD_REQUEST, INTERNAL_SERVER_ERROR, etc), the implicit HttpReads
+    // will always return a response with the status code, but it is throwing an exception instead.
+    // Surprinsingly, this expected behaviour is the way the new version of HttpReads (in hmrc http-verbs project)
+    // works.
+    // After a discussion, we have decided to leave it as it is because, in real life, it is working fine:
+    // even though we do not generate the CreateException, we generate an Exception (BadRequestException),
+    // and the code in ApplicationController is not distinguishing types of exceptions in the error handling code.
+    // In the future we should consider:
+    // -Using the new version of HttpVerbs by adding this code:
+    // import uk.gov.hmrc.http.HttpReads.Implicits._
+    // and adding [HttpResponse] to http.GET(url), http.POSTForm, http.PUTForm and then add code to generate an exception
+    // in case httpResponse.statusCode is not OK
+    // More information in https://github.com/hmrc/http-verbs
     post(postUrl, caseClassToTuples(request)).map { response =>
       if (response.status == OK) {
         Try(response.json.\\("response").head.as[R]) match {

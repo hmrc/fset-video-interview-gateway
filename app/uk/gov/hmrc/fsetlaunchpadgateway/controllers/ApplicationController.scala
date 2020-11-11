@@ -1,5 +1,6 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.controllers
 
+import javax.inject.{ Inject, Singleton }
 import play.api.Logger
 import play.api.libs.json.{ JsValue, Json }
 import play.api.mvc._
@@ -7,23 +8,18 @@ import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.{ AccountClient, ApplicationClient, CandidateClient, InterviewClient }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects._
 import uk.gov.hmrc.fsetlaunchpadgateway.models.commands._
-import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 
-object ApplicationController extends ApplicationController {
-  override val accountClient = AccountClient
-  override val candidateClient = CandidateClient
-  override val interviewClient = InterviewClient
-  override val applicationClient = ApplicationClient
-}
-
-trait ApplicationController extends BaseController {
-
-  val accountClient: AccountClient
-  val candidateClient: CandidateClient
-  val interviewClient: InterviewClient
-  val applicationClient: ApplicationClient
+@Singleton
+class ApplicationController @Inject() (
+  config: FrontendAppConfig,
+  cc: ControllerComponents,
+  candidateClient: CandidateClient,
+  interviewClient: InterviewClient,
+  applicationClient: ApplicationClient
+)(implicit val ec: ExecutionContext) extends BackendController(cc) {
 
   object Operations {
     sealed abstract class Operation {
@@ -51,8 +47,8 @@ trait ApplicationController extends BaseController {
     }
   }
 
-  val launchpadAccountId = Some(FrontendAppConfig.launchpadApiConfig.accountId)
-  val employerEmail = FrontendAppConfig.launchpadApiConfig.extensionValidUserEmailAddress
+  val launchpadAccountId = Some(config.launchpadApiConfig.accountId)
+  val employerEmail = config.launchpadApiConfig.extensionValidUserEmailAddress
 
   def createCandidate(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[CreateCandidateRequest] { cc =>
@@ -130,15 +126,15 @@ trait ApplicationController extends BaseController {
   }
 
   def extendCandidate(): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    withJsonBody[ExtendCandidateRequest] { ec =>
+    withJsonBody[ExtendCandidateRequest] { ecReq =>
       val jsonBody = request.body
       candidateClient.extendDeadline(
-        ec.candidateId,
+        ecReq.candidateId,
         candidate.ExtendDeadlineRequest(
-          FrontendAppConfig.launchpadApiConfig.accountId,
-          ec.interviewId,
-          FrontendAppConfig.launchpadApiConfig.extensionValidUserEmailAddress,
-          ec.newDeadline.toString("yyyy-MM-dd"),
+          config.launchpadApiConfig.accountId,
+          ecReq.interviewId,
+          config.launchpadApiConfig.extensionValidUserEmailAddress,
+          ecReq.newDeadline.toString("yyyy-MM-dd"),
           send_email = false
         )
       ).map { _ =>

@@ -1,17 +1,18 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
+import javax.inject.{ Inject, Named, Singleton }
 import play.api.http.Status._
-import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.CandidateClient.{ CreateException, ExtendDeadlineException }
 import play.api.libs.json.Format
+import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp }
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.CandidateClient.{ CreateException, ExtendDeadlineException }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.candidate.{ CreateRequest, CreateResponse, ExtendDeadlineRequest }
-import scala.concurrent.ExecutionContext.Implicits.global
+
+import scala.concurrent.ExecutionContext
 
 import scala.concurrent.Future
 
-object CandidateClient extends CandidateClient {
-  override val path = "candidates"
-
+object CandidateClient {
   case class CreateException(message: String, stringsToRemove: List[String])
     extends SanitizedClientException(message, stringsToRemove)
 
@@ -19,7 +20,11 @@ object CandidateClient extends CandidateClient {
     extends SanitizedClientException(message, stringsToRemove)
 }
 
-trait CandidateClient extends Client {
+@Singleton
+class CandidateClient @Inject() (
+  @Named("httpExternal") val http: WSHttp,
+  val config: FrontendAppConfig)(implicit override val ec: ExecutionContext)
+  extends Client(http, "candidates", config) {
   def create(createRequest: CreateRequest)(implicit format: Format[CreateResponse]): Future[CreateResponse] =
     postWithResponseAsOrThrow[CreateResponse, CreateException](
       createRequest, getPostRequestUrl(), CreateException

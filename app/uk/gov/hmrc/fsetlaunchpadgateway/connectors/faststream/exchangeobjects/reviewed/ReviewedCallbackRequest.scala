@@ -4,6 +4,7 @@ import org.joda.time.{ DateTime, LocalDate }
 import play.api.libs.json.Json
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback.BaseCallback
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback.reviewed.ReviewedCallback
+import uk.gov.hmrc.fsetlaunchpadgateway.models.commands.FaststreamImplicits._
 
 case class ReviewedCallbackRequest(
   received: DateTime,
