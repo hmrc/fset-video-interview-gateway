@@ -1,22 +1,28 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.controllers
 
+import javax.inject.{ Inject, Singleton }
 import play.api.Logger
 import play.api.libs.json.JsResultException
-import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.mvc._
+import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient.CallbackException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects._
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects.reviewed.ReviewedCallbackRequest
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.{ ApplicationClient, CandidateClient, InterviewClient }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback._
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback.reviewed.ReviewedCallback
 
-import scala.concurrent.Future
-import scala.util.{ Failure, Random, Success, Try }
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.{ Failure, Success, Try }
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
-object CallbackController extends CallbackController(FaststreamClient)
-
-class CallbackController(faststreamClient: FaststreamClient) extends FrontendController {
+@Singleton
+class CallbackController @Inject() (
+  config: FrontendAppConfig,
+  mcc: MessagesControllerComponents,
+  faststreamClient: FaststreamClient
+)(implicit val ec: ExecutionContext) extends FrontendController(mcc) {
 
   // scalastyle:off cyclomatic.complexity method.length
   def present(): Action[AnyContent] = Action.async { implicit request =>

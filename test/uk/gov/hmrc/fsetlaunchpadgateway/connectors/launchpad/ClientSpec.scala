@@ -5,10 +5,11 @@ import org.scalatestplus.play._
 import org.mockito.Matchers.{ eq => eqTo, _ }
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.{ Configuration, Environment }
 import play.api.libs.json.{ Json, Reads }
-import uk.gov.hmrc.fsetlaunchpadgateway.config.WSHttp
+import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ContainsSensitiveData
 
@@ -35,7 +36,8 @@ object ClientTestResponse {
   implicit val clientTestResponseFormat = Json.format[ClientTestResponse]
 }
 
-class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with ScalaFutures {
+class ClientSpec extends PlaySpec with MockitoSugar with ScalaFutures {
+  implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   "Posting a request" should {
     val sampleRequest = ClientTestRequest("Barry", "Johnson", "foo@bar.com")
@@ -120,9 +122,10 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
     val wsHttpMock: WSHttp = mock[WSHttp]
 
     lazy val successfulPostResponseTestClient = makeClient {
-      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
+      when(wsHttpMock.POSTForm(any(), any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
         Future.successful(
-          HttpResponse(200, Some(
+          HttpResponse(
+            200,
             Json.parse(
               """
                 | {
@@ -130,31 +133,35 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
                 |     "testKey": "this is a successful message"
                 |   }
                 | }
-              """.stripMargin)
-          ))
+              """.stripMargin),
+            Map.empty[String, Seq[String]]
+          )
         )
       }
     }
 
     lazy val malformedPostResponseTestClient = makeClient {
-      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
+      when(wsHttpMock.POSTForm(any(), any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
         Future.successful(
-          HttpResponse(200, Some(
+          HttpResponse(
+            200,
             Json.parse(
               """
                 | {
                 |   "unexpected": "response"
                 | }
-              """.stripMargin)
-          ))
+              """.stripMargin),
+            Map.empty[String, Seq[String]]
+          )
         )
       }
     }
 
     lazy val malformedPostResponseContentTestClient = makeClient {
-      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
+      when(wsHttpMock.POSTForm(any(), any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
         Future.successful(
-          HttpResponse(200, Some(
+          HttpResponse(
+            200,
             Json.parse(
               """
                 | {
@@ -162,32 +169,38 @@ class ClientSpec extends PlaySpec with OneServerPerTest with MockitoSugar with S
                 |     "foo": "bar"
                 |   }
                 | }
-              """.stripMargin)
-          ))
+              """.stripMargin),
+            Map.empty[String, Seq[String]]
+          )
         )
       }
     }
 
     lazy val non200TestClient = makeClient {
-      when(wsHttpMock.POSTForm(any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
+      when(wsHttpMock.POSTForm(any(), any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
         Future.successful(
-          HttpResponse(502, Some(
+          HttpResponse(
+            502,
             Json.parse(
               """
                 | {
                 |   "response": "error"
                 | }
-              """.stripMargin)
-          ))
+              """.stripMargin),
+            Map.empty[String, Seq[String]]
+          )
         )
       }
     }
 
     private def makeClient(mockSetup: => Unit): Client = {
       mockSetup
-      new Client {
-        override val http = wsHttpMock
-        override val path = "testclient"
+      val mockConfiguration = mock[Configuration]
+      val mockEnvironment = mock[Environment]
+      val mockConfig = new FrontendAppConfig(mockConfiguration, mockEnvironment) {
+        override lazy val launchpadApiConfig = LaunchpadApiConfig("extension", "key", "baseurl", 1, "http://localhost")
+      }
+      new Client(wsHttpMock, "testclient", mockConfig) {
       }
     }
   }

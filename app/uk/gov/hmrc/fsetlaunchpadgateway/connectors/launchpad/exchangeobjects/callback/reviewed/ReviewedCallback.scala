@@ -3,6 +3,7 @@ package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ca
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.callback.BaseCallback
+import uk.gov.hmrc.fsetlaunchpadgateway.models.commands.FaststreamImplicits._
 
 case class ReviewedCallback(
   candidate_id: String,

@@ -1,54 +1,56 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream
 
-import uk.gov.hmrc.fsetlaunchpadgateway.config.WSHttp
+import javax.inject.{ Inject, Named, Singleton }
+import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient.CallbackException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects._
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects.reviewed.ReviewedCallbackRequest
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-object FaststreamClient extends FaststreamClient {
-  override val http = WSHttp
-
+object FaststreamClient {
   case class CallbackException(message: String) extends Exception(message)
 }
 
-trait FaststreamClient {
-
-  val http: WSHttp
-
-  import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig.faststreamApiConfig._
+@Singleton
+class FaststreamClient @Inject() (val config: FrontendAppConfig, @Named("httpNormal") val http: WSHttp)(implicit ec: ExecutionContext) {
+  val url = config.faststreamApiConfig.url
 
   def setupProcessCallback(callback: SetupProcessCallbackRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
     val launchPadPrefix = getLaunchpadPrefix(callback.customInviteId)
-    http.PUT(s"${url.host}${url.base}$launchPadPrefix/setupProcessCallback", callback).map(okOrThrow)
+    http.PUT[SetupProcessCallbackRequest, HttpResponse](s"${url.host}${url.base}$launchPadPrefix/setupProcessCallback", callback).map(okOrThrow)
   }
 
   def viewPracticeQuestionCallback(callback: ViewPracticeQuestionCallbackRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
     val launchPadPrefix = getLaunchpadPrefix(callback.customInviteId)
-    http.PUT(s"${url.host}${url.base}$launchPadPrefix/viewPracticeQuestion", callback).map(okOrThrow)
+    http.PUT[ViewPracticeQuestionCallbackRequest, HttpResponse](
+      s"${url.host}${url.base}$launchPadPrefix/viewPracticeQuestion", callback).map(okOrThrow)
   }
 
   def questionCallback(callback: QuestionCallbackRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
     val launchPadPrefix = getLaunchpadPrefix(callback.customInviteId)
-    http.PUT(s"${url.host}${url.base}$launchPadPrefix/questionCallback", callback).map(okOrThrow)
+    http.PUT[QuestionCallbackRequest, HttpResponse](
+      s"${url.host}${url.base}$launchPadPrefix/questionCallback", callback).map(okOrThrow)
   }
 
   def finalCallback(callback: FinalCallbackRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
     val launchPadPrefix = getLaunchpadPrefix(callback.customInviteId)
-    http.PUT(s"${url.host}${url.base}$launchPadPrefix/finalCallback", callback).map(okOrThrow)
+    http.PUT[FinalCallbackRequest, HttpResponse](
+      s"${url.host}${url.base}$launchPadPrefix/finalCallback", callback).map(okOrThrow)
   }
 
   def finishedCallback(callback: FinishedCallbackRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
     val launchPadPrefix = getLaunchpadPrefix(callback.customInviteId)
-    http.PUT(s"${url.host}${url.base}$launchPadPrefix/finishedCallback", callback).map(okOrThrow)
+    http.PUT[FinishedCallbackRequest, HttpResponse](
+      s"${url.host}${url.base}$launchPadPrefix/finishedCallback", callback).map(okOrThrow)
   }
 
   def reviewedCallback(callback: ReviewedCallbackRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
     val launchPadPrefix = getLaunchpadPrefix(callback.customInviteId)
-    http.PUT(s"${url.host}${url.base}$launchPadPrefix/reviewedCallback", callback).map(okOrThrow)
+    http.PUT[ReviewedCallbackRequest, HttpResponse](
+      s"${url.host}${url.base}$launchPadPrefix/reviewedCallback", callback).map(okOrThrow)
   }
 
   private def okOrThrow(response: HttpResponse) = {

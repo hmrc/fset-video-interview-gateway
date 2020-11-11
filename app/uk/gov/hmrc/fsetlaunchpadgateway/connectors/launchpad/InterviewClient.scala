@@ -1,20 +1,24 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
-import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.InterviewClient._
-import play.api.http.Status._
+import javax.inject.{ Inject, Named, Singleton }
+import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.InterviewClient._
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.interview._
-
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import uk.gov.hmrc.http.HttpResponse
 
-object InterviewClient extends InterviewClient {
-  override val path = "interviews"
+import scala.concurrent.{ ExecutionContext, Future }
+
+object InterviewClient {
   sealed case class InviteException(message: String, stringsToRemove: List[String]) extends SanitizedClientException(message, stringsToRemove)
 }
 
-trait InterviewClient extends Client {
+@Singleton
+class InterviewClient @Inject() (
+  @Named("httpExternal") val http: WSHttp,
+  val config: FrontendAppConfig)(implicit override val ec: ExecutionContext)
+  extends Client(http, "interviews", config) {
+
   def list(accountId: Option[Int]): Future[HttpResponse] = {
     get(getGetRequestUrl(accountId))
   }

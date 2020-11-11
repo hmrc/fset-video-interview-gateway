@@ -1,7 +1,7 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.controllers
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{ JsValue, Json, Writes }
 import play.api.mvc.{ AnyContentAsEmpty, Results }
