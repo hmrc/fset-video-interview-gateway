@@ -1,20 +1,25 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.controllers
 
-import org.scalatestplus.play.OneAppPerSuite
-import play.api.libs.json.{ JsValue, Json }
-import play.api.mvc.{ AnyContentAsEmpty, AnyContentAsJson }
+import play.api.libs.json.Json
+import play.api.mvc.AnyContentAsJson
 import play.api.test.Helpers._
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
-import play.api.test.{ FakeHeaders, FakeRequest, Helpers }
+import play.api.i18n.MessagesApi
+import play.api.{ Configuration, Environment }
+import play.api.test.{ FakeRequest, Helpers }
+import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects._
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.exchangeobjects.reviewed.ReviewedCallbackRequest
 
 import scala.concurrent.Future
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 
-class CallbackControllerSpec extends BaseControllerSpec with OneAppPerSuite {
+class CallbackControllerSpec extends BaseControllerSpec {
+  implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+
   "Callback Controller#present" should {
     "correctly parse and reply to Setup Process Callbacks" in new TestFixture {
       val result = controller.present()(makeCallbackJsonPostRequest(setupProcessJson))
@@ -97,7 +102,15 @@ class CallbackControllerSpec extends BaseControllerSpec with OneAppPerSuite {
     when(mockFaststreamClient.finalCallback(any())(any())).thenReturn(Future.successful(()))
     when(mockFaststreamClient.reviewedCallback(any())(any())).thenReturn(Future.successful(()))
 
-    class TestController() extends CallbackController(mockFaststreamClient)
+    val mockConfiguration = mock[Configuration]
+    val mockEnvironment = mock[Environment]
+    val mockConfig = new FrontendAppConfig(mockConfiguration, mockEnvironment) {
+      override lazy val launchpadApiConfig = LaunchpadApiConfig("extension", "key", "baseurl", 1, "http://localhost")
+    }
+    val mockMessagesApi = mock[MessagesApi]
+    val stubMcc = stubMessagesControllerComponents(messagesApi = mockMessagesApi)
+
+    class TestController() extends CallbackController(mockConfig, stubMcc, mockFaststreamClient)
 
     val controller = new TestController()
 

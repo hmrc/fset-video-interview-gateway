@@ -47,12 +47,11 @@
 
     <logger name="application" level="DEBUG"/>
 
+    <logger name="com.google.inject" level="INFO"/>
+
     <logger name="connector" level="TRACE">
         <appender-ref ref="STDOUT"/>
     </logger>
-
-    <!-- TODO: Temporal, remove later -->
-    <logger name="uk.gov.hmrc.play.frontend.auth.connectors" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="FILE"/>

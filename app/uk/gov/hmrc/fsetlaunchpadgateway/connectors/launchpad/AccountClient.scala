@@ -1,16 +1,18 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
+import javax.inject.{ Inject, Named, Singleton }
+import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.account.{ CreateRequest, UpdateRequest }
-
-import scala.concurrent.Future
 import uk.gov.hmrc.http.HttpResponse
 
-object AccountClient extends AccountClient {
-  override val path = "accounts"
-}
+import scala.concurrent.{ ExecutionContext, Future }
 
 // TODO: Remove this utility account client before launch
-trait AccountClient extends Client {
+@Singleton
+class AccountClient @Inject() (
+  @Named("httpExternal") val http: WSHttp,
+  val config: FrontendAppConfig)(implicit override val ec: ExecutionContext)
+  extends Client(http, "accounts", config) {
   def list(accountId: Option[Int]): Future[HttpResponse] = {
     get(getGetRequestUrl(accountId))
   }

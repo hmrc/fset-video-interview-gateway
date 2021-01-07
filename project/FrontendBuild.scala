@@ -1,38 +1,23 @@
+import play.sbt.PlayImport.ws
 import sbt._
 import uk.gov.hmrc.SbtAutoBuildPlugin
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.versioning.SbtGitVersioning
 
 object FrontendBuild extends Build with MicroService {
-
   val appName = "fset-video-interview-gateway"
-
   override lazy val appDependencies: Seq[ModuleID] = AppDependencies()
 }
 
-private object Versions {
-  val hmrcFrontendBootstrapVersion      = "12.9.0"
-  val hmrcMicroserviceBootstrapVersion  = "10.6.0"
-  val hmrcPlayPartialsVersion           = "6.1.0"
-  val hmrcPlayAuthorisedFrontendVersion = "7.1.0"
-//  val hmrcPlayAuthorisedFrontendVersion = "7.0.0"
-  val hmrcPlayWhitelistVersion          = "2.0.0"
-
-  val hmrctest                          = "2.4.0"
-  val scalatestplus                     = "1.5.1"
-}
 
 private object AppDependencies {
   import play.sbt.PlayImport._
-  import Versions._
 
   val compile = Seq(
     ws,
-    "uk.gov.hmrc" %% "microservice-bootstrap"   % hmrcMicroserviceBootstrapVersion,
-    "uk.gov.hmrc" %% "frontend-bootstrap"       % hmrcFrontendBootstrapVersion,
-    "uk.gov.hmrc" %% "play-partials"            % hmrcPlayPartialsVersion,
-    "uk.gov.hmrc" %% "play-authorised-frontend" % hmrcPlayAuthorisedFrontendVersion,
-    "uk.gov.hmrc" %% "play-whitelist-filter"    % hmrcPlayWhitelistVersion
+    "uk.gov.hmrc"       %% "bootstrap-backend-play-26"    % "2.25.0",
+    "uk.gov.hmrc"       %% "bootstrap-frontend-play-26"   % "2.25.0",
+    "com.typesafe.play" %% "play-json-joda"               % "2.6.10"
   )
 
   trait TestDependencies {
@@ -42,9 +27,11 @@ private object AppDependencies {
   object Test {
     def apply(): Seq[ModuleID] = new TestDependencies {
       lazy val test = Seq(
-        "org.mockito" % "mockito-all" % "1.10.19",
-        "org.scalatestplus.play"    %% "scalatestplus-play"       % scalatestplus % "test",
-        "uk.gov.hmrc"               %% "hmrctest"                 % hmrctest      % "test"
+        "org.mockito"               %  "mockito-all"              % "1.10.19",
+        "org.scalatestplus.play"    %% "scalatestplus-play"       % "3.1.3"       % "test",
+        "uk.gov.hmrc"               %% "hmrctest"                 % "3.0.0"       % "test",
+        "uk.gov.hmrc"               %% "bootstrap-test-play-26"   % "2.24.0",
+        "com.github.tomakehurst"    %  "wiremock-jre8"            % "2.27.2"      % "test"
       )
     }.test
   }

@@ -1,34 +1,34 @@
 
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
-import org.scalatestplus.play._
-import play.api.Logger
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
+import play.api.{ Application, Logger }
 import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
-import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.account.{ CreateRequest, UpdateRequest }
-import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.candidate.ExtendDeadlineRequest
-import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.interview.SeamlessLoginInviteRequest
-import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.account.UpdateRequest
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import language.postfixOps
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.postfixOps
 
 // This is a manual test class for trying new methods against the launchpad API
-class ManualClient extends UnitSpec with OneServerPerTest {
+class ManualClient extends uk.gov.hmrc.play.test.UnitSpec {
 
   "Testing" should {
     "Client test" ignore {
 
+      val application: Application = new GuiceApplicationBuilder()
+        .build()
+
+      val appConfig = application.injector.instanceOf(classOf[FrontendAppConfig])
+      val accountClient = application.injector.instanceOf(classOf[AccountClient])
+
       implicit val fakeRequest = FakeRequest()
 
-      val accountId = Some(FrontendAppConfig.launchpadApiConfig.accountId)
+      val accountId = Some(appConfig.launchpadApiConfig.accountId)
 
       Logger.warn("Sending request...")
 
-      val theRequest = AccountClient.getSpecific(accountId.get)
+      val theRequest = accountClient.getSpecific(accountId.get)
 
       // TODO: This should be a mapped future
       val response = Await.result(theRequest, 30 seconds)
@@ -38,7 +38,6 @@ class ManualClient extends UnitSpec with OneServerPerTest {
       assert(true)
     }
   }
-
 }
 /*
 List all interviews
