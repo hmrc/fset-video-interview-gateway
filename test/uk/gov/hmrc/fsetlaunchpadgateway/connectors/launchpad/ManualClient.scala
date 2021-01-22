@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
+import org.scalatestplus.play.PlaySpec
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.{ Application, Logger }
@@ -26,7 +27,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 // This is a manual test class for trying new methods against the launchpad API
-class ManualClient extends uk.gov.hmrc.play.test.UnitSpec {
+class ManualClient extends PlaySpec {
 
   "Testing" should {
     "Client test" ignore {
