@@ -17,7 +17,7 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.controllers
 
 import javax.inject.{ Inject, Singleton }
-import play.api.Logger
+import play.api.Logging
 import play.api.libs.json.{ JsValue, Json }
 import play.api.mvc._
 import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
@@ -35,7 +35,7 @@ class ApplicationController @Inject() (
   candidateClient: CandidateClient,
   interviewClient: InterviewClient,
   applicationClient: ApplicationClient
-)(implicit val ec: ExecutionContext) extends BackendController(cc) {
+)(implicit val ec: ExecutionContext) extends BackendController(cc) with Logging {
 
   object Operations {
     sealed abstract class Operation {
@@ -161,14 +161,14 @@ class ApplicationController @Inject() (
 
   private def recoverFromBadCall(operation: Operations.Operation, request: JsValue): PartialFunction[Throwable, Result] = {
     case e: Throwable =>
-      Logger.warn(s"Error communicating with launchpad for operation ${operation.name}. Request: $request. " +
+      logger.warn(s"Error communicating with launchpad for operation ${operation.name}. Request: $request. " +
         s"Error: ${e.getMessage}. Stacktrace: ${e.getStackTrace}.")
       InternalServerError("Error communicating with Launchpad")
   }
 
   private def recoverFromBadResetOrRetakeCall(operation: Operations.Operation, request: JsValue): PartialFunction[Throwable, Result] = {
     case e: Throwable =>
-      Logger.warn(s"Error communicating with launchpad for operation ${operation.name}. Request: $request. " +
+      logger.warn(s"Error communicating with launchpad for operation ${operation.name}. Request: $request. " +
         s"Error: ${e.getMessage}. Stacktrace: ${e.getStackTrace}")
       if (e.getMessage.contains("Interview ID and/or Candidate ID are invalid") ||
         e.getMessage.contains("Candidate is not applicable for application reset")) {

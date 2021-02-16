@@ -17,7 +17,7 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.config
 
 import javax.inject.Inject
-import play.api.Logger
+import play.api.Logging
 import play.api.i18n.MessagesApi
 import play.api.mvc.{ Request, RequestHeader }
 import play.twirl.api.Html
@@ -27,12 +27,12 @@ import scala.language.implicitConversions
 
 class FaststreamErrorHandler @Inject() (
   val messagesApi: MessagesApi,
-  val config: FrontendAppConfig) extends FrontendErrorHandler {
+  val config: FrontendAppConfig) extends FrontendErrorHandler with Logging {
 
   private implicit def rhToRequest(rh: RequestHeader): Request[_] = Request(rh, "")
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit rh: Request[_]): Html = {
-    Logger.error(s"An error occurred: [$message]")
+    logger.error(s"An error occurred: [$message]")
     Html("An error occurred")
   }
 }

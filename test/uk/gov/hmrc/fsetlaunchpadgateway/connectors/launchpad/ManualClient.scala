@@ -19,7 +19,7 @@ package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 import org.scalatestplus.play.PlaySpec
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import play.api.{ Application, Logger }
+import play.api.{ Application, Logging }
 import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
 
 import scala.concurrent.Await
@@ -27,7 +27,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 // This is a manual test class for trying new methods against the launchpad API
-class ManualClient extends PlaySpec {
+class ManualClient extends PlaySpec with Logging {
 
   "Testing" should {
     "Client test" ignore {
@@ -42,14 +42,14 @@ class ManualClient extends PlaySpec {
 
       val accountId = Some(appConfig.launchpadApiConfig.accountId)
 
-      Logger.warn("Sending request...")
+      logger.warn("Sending request...")
 
       val theRequest = accountClient.getSpecific(accountId.get)
 
       // TODO: This should be a mapped future
       val response = Await.result(theRequest, 30 seconds)
 
-      Logger.warn("Response = " + response.body + "\n\n")
+      logger.warn("Response = " + response.body + "\n\n")
 
       assert(true)
     }
