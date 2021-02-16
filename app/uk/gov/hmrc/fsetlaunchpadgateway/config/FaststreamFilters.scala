@@ -18,14 +18,15 @@ package uk.gov.hmrc.fsetlaunchpadgateway.config
 
 import akka.stream.Materializer
 import com.kenshoo.play.metrics.MetricsFilter
-import javax.inject.Inject
-import play.api.Logger
+import play.api.Logging
 import play.api.http.DefaultHttpFilters
 import uk.gov.hmrc.fsetlaunchpadgateway.filters.{ FaststreamAuditFilter, FaststreamWhitelistFilter }
 import uk.gov.hmrc.play.bootstrap.filters.{ CacheControlFilter, LoggingFilter }
+import uk.gov.hmrc.play.bootstrap.frontend.filters.HeadersFilter
 import uk.gov.hmrc.play.bootstrap.frontend.filters.crypto.SessionCookieCryptoFilter
 import uk.gov.hmrc.play.bootstrap.frontend.filters.deviceid.DeviceIdFilter
-import uk.gov.hmrc.play.bootstrap.frontend.filters.{ FrontendFilters, HeadersFilter }
+
+import javax.inject.Inject
 
 class FaststreamFilters @Inject() (
   metricsFilter: MetricsFilter,
@@ -41,8 +42,8 @@ class FaststreamFilters @Inject() (
   deviceIdFilter,
   loggingFilter,
   frontendAuditFilter,
-  cacheControlFilter) {
-  Logger.info("White list filter NOT enabled")
+  cacheControlFilter) with Logging {
+  logger.info("White list filter NOT enabled")
 }
 
 class ProductionFaststreamFilters @Inject() (
@@ -61,6 +62,6 @@ class ProductionFaststreamFilters @Inject() (
   loggingFilter,
   frontendAuditFilter,
   cacheControlFilter,
-  whitelistFilter) {
-  Logger.info("White list filter enabled")
+  whitelistFilter) with Logging {
+  logger.info("White list filter enabled")
 }

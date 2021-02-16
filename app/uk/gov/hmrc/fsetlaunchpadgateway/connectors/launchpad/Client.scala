@@ -20,7 +20,6 @@ import play.api.http.Status._
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
-import play.api.Logger
 import play.api.libs.json.Format
 import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp, WSHttpExternal }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException

@@ -1,6 +1,6 @@
-import TestPhases._
 import com.typesafe.sbt.SbtScalariform.{ScalariformKeys, scalariformSettings}
 import sbt.Keys._
+import sbt.Tests.{Group, SubProcess}
 import sbt._
 import scalariform.formatter.preferences._
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings, targetJvm}
@@ -40,21 +40,29 @@ lazy val microservice = Project(appName, file("."))
   )
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(sbt.Defaults.testSettings) : _*)
-  .settings(scalariformSettings: _*)
   .settings(ScalariformKeys.preferences := ScalariformKeys.preferences.value
     .setPreference(FormatXml, false)
     .setPreference(DoubleIndentConstructorArguments, false)
-    .setPreference(DanglingCloseParenthesis, Preserve))
-  .settings(compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).toTask("").value,
-    (compile in Compile) <<= (compile in Compile) dependsOn compileScalastyle)
+    .setPreference(DanglingCloseParenthesis, Preserve)
+  )
+  .settings(compileScalastyle := scalastyle.in(Compile).toTask("").value,
+    (compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
+  )
   .settings(
     Keys.fork in IntegrationTest := false,
-    unmanagedSourceDirectories in IntegrationTest <<= (baseDirectory in IntegrationTest)(base => Seq(base / "it")),
+    unmanagedSourceDirectories in IntegrationTest := Seq((baseDirectory in IntegrationTest).value / "it"),
     addTestReportOption(IntegrationTest, "int-test-reports"),
     testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
-    parallelExecution in IntegrationTest := false)
+    parallelExecution in IntegrationTest := false
+  )
   .settings(resolvers ++= Seq(
     Resolver.bintrayRepo("hmrc", "releases"),
     Resolver.jcenterRepo
   ))
   .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
+
+def oneForkedJvmPerTest(tests: Seq[TestDefinition]): Seq[Group] =
+  tests map { test =>
+    val forkOptions = ForkOptions().withRunJVMOptions(Vector("-Dtest.name=" + test.name))
+    Group(test.name, Seq(test), SubProcess(config = forkOptions))
+  }
