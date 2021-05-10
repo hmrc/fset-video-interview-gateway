@@ -42,6 +42,6 @@ trait WSHttp extends HttpGet with WSGet
   with WSPutWithForms with HttpPost with WSPost with HttpDelete with WSDelete with HttpPut {
   val application: Application
   override val hooks = NoneRequired
-  override lazy val configuration: Option[Config] = Option(application.configuration.underlying)
+  override lazy val configuration: Config = application.configuration.underlying
   override lazy val actorSystem: ActorSystem = application.actorSystem
 }

@@ -49,11 +49,10 @@ class FrontendAppConfig @Inject() (
   lazy val faststreamApiConfig = config.underlying.as[FaststreamApiConfig]("microservice.services.faststream")
   lazy val launchpadApiConfig = config.underlying.as[LaunchpadApiConfig]("microservice.services.launchpad.api")
 
-  // Whitelist Configuration
-  private def whitelistConfig(key: String): Seq[String] = Some(
-    new String(Base64.getDecoder().decode(config.getOptional[String](key).getOrElse("")), "UTF-8")
+  private def allowlistConfig(key: String): Seq[String] = Some(
+    new String(Base64.getDecoder.decode(config.getOptional[String](key).getOrElse("")), "UTF-8")
   ).map(_.split(",")).getOrElse(Array.empty).toSeq
 
-  lazy val whitelist = whitelistConfig("whitelist")
-  lazy val whitelistExcluded = whitelistConfig("whitelistExcludedCalls")
+  lazy val allowlist = allowlistConfig("whitelist") //TODO: change the key
+  lazy val allowlistExcluded = allowlistConfig("whitelistExcludedCalls") //TODO: change the key
 }

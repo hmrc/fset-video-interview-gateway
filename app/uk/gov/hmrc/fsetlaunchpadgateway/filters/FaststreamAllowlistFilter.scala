@@ -22,22 +22,22 @@ import akka.stream.Materializer
 import javax.inject.{ Inject, Singleton }
 import play.api.Configuration
 import play.api.mvc.{ Call, EssentialFilter, RequestHeader, Result }
-import uk.gov.hmrc.whitelist.AkamaiWhitelistFilter
+import uk.gov.hmrc.allowlist.AkamaiAllowlistFilter
 
 import scala.concurrent.Future
 
-// We are using our own WhiteList filter instead of using this one
+// We are using our own AllowList filter instead of using this one
 // https://github.com/hmrc/bootstrap-play/blob/
-// master/bootstrap-frontend-play-26/src/main/scala/uk/gov/hmrc/play/bootstrap/frontend/filters/WhitelistFilter.scala
+// master/bootstrap-frontend-play-26/src/main/scala/uk/gov/hmrc/play/bootstrap/frontend/filters/AllowlistFilter.scala
 // They are slightly different, specially regarding the pathPrefixesToExclude
 @Singleton
-class FaststreamWhitelistFilter @Inject() (
+class FaststreamAllowlistFilter @Inject() (
   val configuration: Configuration,
   val mat: Materializer)
-  extends AkamaiWhitelistFilter with EssentialFilter {
+  extends AkamaiAllowlistFilter with EssentialFilter {
 
   // Whitelist Configuration
-  private def whitelistConfig(key: String): Seq[String] =
+  private def allowlistConfig(key: String): Seq[String] =
     Some(new String(Base64.getDecoder.decode(configuration.getOptional[String](key).getOrElse("")), "UTF-8"))
       .map(_.split(",")).getOrElse(Array.empty).toSeq
 
@@ -47,10 +47,11 @@ class FaststreamWhitelistFilter @Inject() (
   ): Future[Result] = { f(rh) }
 
   // List of IP addresses
-  override def whitelist: Seq[String] = whitelistConfig("whitelist")
+  override def allowlist: Seq[String] = allowlistConfig("whitelist") //TODO: change key
 
   // Es. /ping/ping,/admin/details
-  override def excludedPaths: Seq[Call] = whitelistConfig("whitelistExcludedCalls").map {
+  //TODO: change key
+  override def excludedPaths: Seq[Call] = allowlistConfig("whitelistExcludedCalls").map {
     path => Call("GET", path)
   }
 
