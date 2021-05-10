@@ -16,20 +16,19 @@
 
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
-import org.scalatestplus.play._
-import org.mockito.Matchers.{ eq => eqTo, _ }
+import org.mockito.ArgumentMatchers.{ eq => eqTo, _ }
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.http.Status.{ BAD_GATEWAY, OK }
 import play.api.{ Configuration, Environment }
-import play.api.libs.json.{ Json, Reads }
+import play.api.libs.json.Json
 import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ContainsSensitiveData
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.concurrent.duration._
 import scala.language.postfixOps
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
 
@@ -140,7 +139,7 @@ class ClientSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       when(wsHttpMock.POSTForm(any(), any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
         Future.successful(
           HttpResponse(
-            200,
+            OK,
             Json.parse(
               """
                 | {
@@ -159,7 +158,7 @@ class ClientSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       when(wsHttpMock.POSTForm(any(), any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
         Future.successful(
           HttpResponse(
-            200,
+            OK,
             Json.parse(
               """
                 | {
@@ -176,7 +175,7 @@ class ClientSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       when(wsHttpMock.POSTForm(any(), any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
         Future.successful(
           HttpResponse(
-            200,
+            OK,
             Json.parse(
               """
                 | {
@@ -195,7 +194,7 @@ class ClientSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       when(wsHttpMock.POSTForm(any(), any(), any())(any[HttpReads[HttpResponse]](), any[HeaderCarrier](), any[ExecutionContext])).thenReturn {
         Future.successful(
           HttpResponse(
-            502,
+            BAD_GATEWAY,
             Json.parse(
               """
                 | {

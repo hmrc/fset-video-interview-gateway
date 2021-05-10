@@ -17,8 +17,9 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.filters
 
 import akka.stream.Materializer
+import play.api.Configuration
+
 import javax.inject.{ Inject, Singleton }
-import play.api.{ Configuration, Play }
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.{ ControllerConfigs, HttpAuditEvent }
 import uk.gov.hmrc.play.bootstrap.frontend.filters.DefaultFrontendAuditFilter
@@ -27,11 +28,12 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class FaststreamAuditFilter @Inject() (
+  override val config: Configuration,
   val controllerConfigs: ControllerConfigs,
   override val auditConnector: AuditConnector,
   httpAuditEvent: HttpAuditEvent,
   override val mat: Materializer
 )(implicit ec: ExecutionContext)
-  extends DefaultFrontendAuditFilter(controllerConfigs, auditConnector, httpAuditEvent, mat) {
+  extends DefaultFrontendAuditFilter(config, controllerConfigs, auditConnector, httpAuditEvent, mat) {
   override val maskedFormFields: Seq[String] = Seq("password")
 }

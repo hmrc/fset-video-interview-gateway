@@ -116,7 +116,7 @@ abstract class Client(http: WSHttp, val path: String, config: FrontendAppConfig)
     // TODO: This code is assuming that when there is an error calling launchpad
     // (BAD_REQUEST, INTERNAL_SERVER_ERROR, etc), the implicit HttpReads
     // will always return a response with the status code, but it is throwing an exception instead.
-    // Surprinsingly, this expected behaviour is the way the new version of HttpReads (in hmrc http-verbs project)
+    // Surprisingly, this expected behaviour is the way the new version of HttpReads (in hmrc http-verbs project)
     // works.
     // After a discussion, we have decided to leave it as it is because, in real life, it is working fine:
     // even though we do not generate the CreateException, we generate an Exception (BadRequestException),
@@ -132,7 +132,7 @@ abstract class Client(http: WSHttp, val path: String, config: FrontendAppConfig)
         Try(response.json.\\("response").head.as[R]) match {
           case Success(resp) => resp
           case Failure(ex) => throw exceptionOnFailure(s"Unexpected response from Launchpad when calling $postUrl. Response body was:" +
-            s"${response.body}. Request: ${request}. Caused by exception: ${ex} .", request.getSensitiveStrings)
+            s"${response.body}. Request: ${request}. Caused by exception: $ex .", request.getSensitiveStrings)
         }
       } else {
         throw exceptionOnFailure(s"Received a ${response.status} code from Launchpad when calling $postUrl. " +
@@ -156,11 +156,12 @@ abstract class Client(http: WSHttp, val path: String, config: FrontendAppConfig)
 
   def put(url: String, queryParams: Seq[(String, String)]): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = getHeaderCarrier
-    val qp = convertQueryParamsForTx(queryParams)
     http.PUTForm(url, convertQueryParamsForTx(queryParams))
   }
 
   private def convertQueryParamsForTx(queryParams: Seq[(String, String)]): Map[String, Seq[String]] =
-    queryParams.map(pair => pair._1 -> Seq(pair._2))(collection.breakOut): Map[String, Seq[String]]
+    queryParams.map {
+      case (key, value) => key -> Seq(value)
+    }(collection.breakOut): Map[String, Seq[String]]
 }
 

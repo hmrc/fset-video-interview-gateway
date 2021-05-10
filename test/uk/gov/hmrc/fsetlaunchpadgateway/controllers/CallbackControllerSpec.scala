@@ -19,7 +19,7 @@ package uk.gov.hmrc.fsetlaunchpadgateway.controllers
 import play.api.libs.json.Json
 import play.api.mvc.AnyContentAsJson
 import play.api.test.Helpers._
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import play.api.i18n.MessagesApi
 import play.api.{ Configuration, Environment }

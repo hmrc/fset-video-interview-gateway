@@ -22,12 +22,11 @@ import org.scalatest.TestData
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerTest
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test._
 import play.api.{ Application, Environment, Mode }
 
-class FaststreamWhitelistFilterConfigSpec extends PlaySpec with GuiceOneAppPerTest {
+class FaststreamAllowlistFilterConfigSpec extends PlaySpec with GuiceOneAppPerTest {
 
   val dummyIP1 = "11.22.33.44"
   val dummyIP3 = "93.00.33.33"
@@ -43,22 +42,22 @@ class FaststreamWhitelistFilterConfigSpec extends PlaySpec with GuiceOneAppPerTe
 
   "FrontendAppConfig" must {
     "return a valid config item" when {
-      "the whitelist exclusion paths are requested" in {
+      "the allowlist exclusion paths are requested" in {
         val environment = Environment.simple(mode = Mode.Prod)
         val frontendAppConfig = new FrontendAppConfig(app.configuration, environment)
-        frontendAppConfig.whitelistExcluded mustBe Seq("/ping/ping", "/healthcheck")
+        frontendAppConfig.allowlistExcluded mustBe Seq("/ping/ping", "/healthcheck")
       }
-      "the whitelist IPs are requested" in {
+      "the allowlist IPs are requested" in {
         val environment = Environment.simple(mode = Mode.Prod)
         val frontendAppConfig = new FrontendAppConfig(app.configuration, environment)
-        frontendAppConfig.whitelist mustBe Seq(dummyIP1)
+        frontendAppConfig.allowlist mustBe Seq(dummyIP1)
       }
     }
   }
 
-  "WhiteListFilter" must {
+  "AllowListFilter" must {
     "let requests pass" when {
-      "coming from an IP in the white list must work as normal" in {
+      "coming from an IP in the allow list must work as normal" in {
         val request = FakeRequest(POST, "/fset-video-interview-gateway/faststream/callback")
           .withHeaders("True-Client-IP" -> dummyIP1)
         val Some(result) = route(app, request)
@@ -66,7 +65,7 @@ class FaststreamWhitelistFilterConfigSpec extends PlaySpec with GuiceOneAppPerTe
         status(result) mustBe BAD_REQUEST
       }
 
-      "coming from an IP NOT in the white-list and not with a white-listed path must be redirected" in {
+      "coming from an IP NOT in the allow list and not with an allow listed path must be redirected" in {
         val request = FakeRequest(GET, "/fset-video-interview-gateway/faststream/callback").withHeaders("True-Client-IP" -> dummyIP3)
         val Some(result) = route(app, request)
 
@@ -74,7 +73,7 @@ class FaststreamWhitelistFilterConfigSpec extends PlaySpec with GuiceOneAppPerTe
         redirectLocation(result) mustBe Some("https://www.apply-civil-service-fast-stream.service.gov.uk/outage-fset-faststream/index.html")
       }
 
-      "coming from an IP NOT in the white-list, but with a white-listed path must work as normal" in {
+      "coming from an IP NOT in the allow list, but with an allow listed path must work as normal" in {
         val request = FakeRequest(GET, "/ping/ping").withHeaders("True-Client-IP" -> dummyIP3)
         val Some(result) = route(app, request)
 
