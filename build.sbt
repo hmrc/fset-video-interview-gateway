@@ -56,7 +56,6 @@ lazy val microservice = Project(appName, file("."))
     parallelExecution in IntegrationTest := false
   )
   .settings(resolvers ++= Seq(
-    Resolver.bintrayRepo("hmrc", "releases"),
     Resolver.jcenterRepo
   ))
   .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
