@@ -29,14 +29,13 @@ lazy val microservice = Project(appName, file("."))
     targetJvm := "jvm-1.8",
     scalaVersion := "2.12.11",
     libraryDependencies ++= appDependencies,
-    parallelExecution in Test := false,
-    fork in Test := true,
-    javaOptions in Test += "-Dlogger.resource=logback-test.xml",
+    Test / parallelExecution := false,
+    Test / fork := true,
+    Test / javaOptions += "-Dlogger.resource=logback-test.xml",
     retrieveManaged := true,
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     scalacOptions += "-feature",
     // Currently don't enable warning in value discard in tests until ScalaTest 3
-    scalacOptions in (Compile, compile) += "-Ywarn-value-discard"
+    Compile / compile / scalacOptions += "-Ywarn-value-discard"
   )
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(sbt.Defaults.testSettings) : _*)
@@ -45,15 +44,15 @@ lazy val microservice = Project(appName, file("."))
     .setPreference(DoubleIndentConstructorArguments, false)
     .setPreference(DanglingCloseParenthesis, Preserve)
   )
-  .settings(compileScalastyle := scalastyle.in(Compile).toTask("").value,
-    (compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
+  .settings(compileScalastyle := (Compile / scalastyle).toTask("").value,
+    (Compile / compile) := ((Compile / compile) dependsOn compileScalastyle).value
   )
   .settings(
-    Keys.fork in IntegrationTest := false,
-    unmanagedSourceDirectories in IntegrationTest := Seq((baseDirectory in IntegrationTest).value / "it"),
+    IntegrationTest / Keys.fork := false,
+    IntegrationTest / unmanagedSourceDirectories := Seq((IntegrationTest / baseDirectory).value / "it"),
     addTestReportOption(IntegrationTest, "int-test-reports"),
-    testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
-    parallelExecution in IntegrationTest := false
+    IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value),
+    IntegrationTest / parallelExecution := false
   )
   .settings(resolvers ++= Seq(
     Resolver.jcenterRepo
