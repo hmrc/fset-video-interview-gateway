@@ -17,20 +17,19 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
 import play.api.http.Status._
-import java.nio.charset.StandardCharsets
-import java.util.Base64
-
 import play.api.libs.json.Format
-import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp, WSHttpExternal }
+import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ContainsSensitiveData
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.interview.Question
-
-import scala.concurrent.ExecutionContext
-import scala.collection.mutable
-import scala.concurrent.Future
-import scala.util.{ Failure, Success, Try }
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+
+import java.nio.charset.StandardCharsets
+import java.util.Base64
+import scala.collection.mutable
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.{ Failure, Success, Try }
 
 object Client {
   abstract class SanitizedClientException(message: String, stringsToRemove: List[String])
@@ -42,10 +41,10 @@ object Client {
 }
 
 abstract class Client(http: WSHttp, val path: String, config: FrontendAppConfig)(implicit val ec: ExecutionContext) {
-  val apiBaseUrl = config.launchpadApiConfig.baseUrl
+  val apiBaseUrl: String = config.launchpadApiConfig.baseUrl
 
   // TODO: This whole method is grimy. Done quickly for the spike, needs to perhaps do something clever with QueryStringBindable in play instead
-  def caseClassToTuples(cc: Product, isList: Boolean = false): Seq[(String, String)] = {
+  def caseClassToTuples(cc: Product): Seq[(String, String)] = {
     val values = cc.productIterator
 
     val emptyKeys = mutable.Set[String]()
@@ -58,7 +57,7 @@ abstract class Client(http: WSHttp, val path: String, config: FrontendAppConfig)
         case None =>
           emptyKeys.add(declaredField.getName); ""
         // ?questions[][text]=QUESTION+1&questions[][limit]=30&questions[][text]=QUESTION+2&questions[][limit]=60
-        case x :: xs if x.isInstanceOf[Question] => {
+        case x :: _ if x.isInstanceOf[Question] =>
           emptyKeys.add(declaredField.getName)
           nextVal.asInstanceOf[List[Question]].foreach { question =>
             additionalQuestionKeys +=
@@ -75,12 +74,11 @@ abstract class Client(http: WSHttp, val path: String, config: FrontendAppConfig)
             }
           }
           ""
-        }
         case anythingElse => anythingElse.toString
       }
     })
 
-    (result ++ additionalQuestionKeys.reverse).filter { case (k, v) => !emptyKeys.contains(k) }
+    (result ++ additionalQuestionKeys.reverse).filter { case (k, _) => !emptyKeys.contains(k) }
   }
 
   protected def getPostRequestUrl(optionalSuffix: String = ""): String = {
@@ -132,7 +130,7 @@ abstract class Client(http: WSHttp, val path: String, config: FrontendAppConfig)
         Try(response.json.\\("response").head.as[R]) match {
           case Success(resp) => resp
           case Failure(ex) => throw exceptionOnFailure(s"Unexpected response from Launchpad when calling $postUrl. Response body was:" +
-            s"${response.body}. Request: ${request}. Caused by exception: $ex .", request.getSensitiveStrings)
+            s"${response.body}. Request: $request. Caused by exception: $ex .", request.getSensitiveStrings)
         }
       } else {
         throw exceptionOnFailure(s"Received a ${response.status} code from Launchpad when calling $postUrl. " +
@@ -146,17 +144,17 @@ abstract class Client(http: WSHttp, val path: String, config: FrontendAppConfig)
   def get(url: String): Future[HttpResponse] = {
     // http.url(url).withHeaders(getAuthHeaders: _*).get()
     implicit val hc: HeaderCarrier = getHeaderCarrier
-    http.GET(url)
+    http.GET[HttpResponse](url)
   }
 
   def post(url: String, queryParams: Seq[(String, String)]): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = getHeaderCarrier
-    http.POSTForm(url, convertQueryParamsForTx(queryParams))
+    http.POSTForm[HttpResponse](url, convertQueryParamsForTx(queryParams))
   }
 
   def put(url: String, queryParams: Seq[(String, String)]): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = getHeaderCarrier
-    http.PUTForm(url, convertQueryParamsForTx(queryParams))
+    http.PUTForm[HttpResponse](url, convertQueryParamsForTx(queryParams))
   }
 
   private def convertQueryParamsForTx(queryParams: Seq[(String, String)]): Map[String, Seq[String]] =
@@ -164,4 +162,3 @@ abstract class Client(http: WSHttp, val path: String, config: FrontendAppConfig)
       case (key, value) => key -> Seq(value)
     }(collection.breakOut): Map[String, Seq[String]]
 }
-

@@ -16,21 +16,20 @@
 
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad
 
-import org.mockito.ArgumentMatchers.{ eq => eqTo, _ }
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{ BAD_GATEWAY, OK }
-import play.api.{ Configuration, Environment }
 import play.api.libs.json.Json
+import play.api.{ Configuration, Environment }
 import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.Client.SanitizedClientException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ContainsSensitiveData
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.language.postfixOps
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
 
 case class ClientTestException(message: String, stringsToRemove: List[String]) extends SanitizedClientException(message, stringsToRemove)
 

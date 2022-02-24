@@ -1,4 +1,5 @@
 import com.typesafe.sbt.SbtScalariform.{ScalariformKeys, scalariformSettings}
+import play.sbt.PlayImport.PlayKeys.playDefaultPort
 import sbt.Keys._
 import sbt.Tests.{Group, SubProcess}
 import sbt._
@@ -25,6 +26,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalaSettings: _*)
   .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
+  .settings(playDefaultPort := 9296)
   .settings(
     targetJvm := "jvm-1.8",
     scalaVersion := "2.12.11",

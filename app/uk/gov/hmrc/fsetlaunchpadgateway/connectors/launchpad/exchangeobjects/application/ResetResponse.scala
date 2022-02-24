@@ -18,7 +18,6 @@ package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ap
 
 import play.api.libs.json.Json
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.ContainsSensitiveData
-import uk.gov.hmrc.fsetlaunchpadgateway.models.commands.{ InviteCandidateResponse, ResetApplicantResponse }
 
 case class ResetResponse(
   interview_id: Int,
