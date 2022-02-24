@@ -44,8 +44,6 @@ class FrontendAppConfig @Inject() (
     base: String
   )
 
-  private def loadConfig(key: String) = config.getOptional[String](key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
-
   lazy val faststreamApiConfig = config.underlying.as[FaststreamApiConfig]("microservice.services.faststream")
   lazy val launchpadApiConfig = config.underlying.as[LaunchpadApiConfig]("microservice.services.launchpad.api")
 

@@ -21,7 +21,7 @@ import play.api.Logging
 import play.api.libs.json.{ JsValue, Json }
 import play.api.mvc._
 import uk.gov.hmrc.fsetlaunchpadgateway.config.FrontendAppConfig
-import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.{ AccountClient, ApplicationClient, CandidateClient, InterviewClient }
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.{ ApplicationClient, CandidateClient, InterviewClient }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects._
 import uk.gov.hmrc.fsetlaunchpadgateway.models.commands._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -63,8 +63,8 @@ class ApplicationController @Inject() (
     }
   }
 
-  val launchpadAccountId = Some(config.launchpadApiConfig.accountId)
-  val employerEmail = config.launchpadApiConfig.extensionValidUserEmailAddress
+  val launchpadAccountId: Option[Int] = Some(config.launchpadApiConfig.accountId)
+  val employerEmail: String = config.launchpadApiConfig.extensionValidUserEmailAddress
 
   def createCandidate(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[CreateCandidateRequest] { cc =>
@@ -153,9 +153,7 @@ class ApplicationController @Inject() (
           ecReq.newDeadline.toString("yyyy-MM-dd"),
           send_email = false
         )
-      ).map { _ =>
-          Ok
-        }.recover(recoverFromBadCall(Operations.ExtendCandidate, jsonBody))
+      ).map { _ => Ok }.recover(recoverFromBadCall(Operations.ExtendCandidate, jsonBody))
     }
   }
 
@@ -172,7 +170,7 @@ class ApplicationController @Inject() (
         s"Error: ${e.getMessage}. Stacktrace: ${e.getStackTrace}")
       if (e.getMessage.contains("Interview ID and/or Candidate ID are invalid") ||
         e.getMessage.contains("Candidate is not applicable for application reset")) {
-        Conflict("Video interview cannot be reset due to being in an unresetable state.")
+        Conflict("Video interview cannot be reset due to not being in a state that can be reset.")
       } else {
         InternalServerError("Error communicating with Launchpad")
       }

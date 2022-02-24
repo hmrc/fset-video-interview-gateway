@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream
 
+import play.api.http.Status.OK
+
 import javax.inject.{ Inject, Named, Singleton }
 import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttp }
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.faststream.FaststreamClient.CallbackException
@@ -70,7 +72,7 @@ class FaststreamClient @Inject() (val config: FrontendAppConfig, @Named("httpNor
   }
 
   private def okOrThrow(response: HttpResponse) = {
-    if (response.status != 200) {
+    if (response.status != OK) {
       throw CallbackException(s"Response was not OK when forwarding callback to Faststream. Response: {$response.body}")
     }
   }

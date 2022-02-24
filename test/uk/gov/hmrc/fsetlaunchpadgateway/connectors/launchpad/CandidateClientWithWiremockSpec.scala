@@ -21,8 +21,8 @@ import play.api.http.Status.{ BAD_REQUEST, OK }
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.fsetlaunchpadgateway.config.{ FrontendAppConfig, WSHttpExternal }
+import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.CandidateClient.CreateException
 import uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.exchangeobjects.candidate.{ CreateRequest, CreateResponse }
-import uk.gov.hmrc.http.BadRequestException
 
 class CandidateClientWithWiremockSpec extends BaseConnectorWithWiremockSpec {
   "create" should {
@@ -47,7 +47,7 @@ class CandidateClientWithWiremockSpec extends BaseConnectorWithWiremockSpec {
       result mustBe response
     }
 
-    "throw BadRequestException when BAD_REQUEST" in new TestFixture {
+    "throw CreateException when BAD_REQUEST" in new TestFixture {
       case class LaunchPadCreateResponse(val response: CreateResponse)
       implicit val createLaunchPadCreateResponseFormat = Json.format[LaunchPadCreateResponse]
 
@@ -75,10 +75,10 @@ class CandidateClientWithWiremockSpec extends BaseConnectorWithWiremockSpec {
       // even though we do not generate the CreateException, we generate an Exception (BadRequestException),
       // and the code in ApplicationController is not distinguishing types of exceptions in the error handling code.
       // In the future, if we sort out the problem and we use the new version of HttpVerbs, we should switch the comment
-      // between this two assertions.
-      //result mustBe an[CreateException]
-      result mustBe an[BadRequestException]
-
+      // between these two assertions. Note we are now using the latest http-verb library so we updated this test, which
+      // previously had the following check:
+      // result mustBe an[BadRequestException]
+      result mustBe an[CreateException]
     }
   }
 
