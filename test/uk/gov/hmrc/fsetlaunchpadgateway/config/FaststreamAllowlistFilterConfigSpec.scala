@@ -29,7 +29,7 @@ import play.api.{ Application, Environment, Mode }
 class FaststreamAllowlistFilterConfigSpec extends PlaySpec with GuiceOneAppPerTest {
 
   val dummyIP1 = "11.22.33.44"
-  val dummyIP3 = "93.00.33.33"
+  val dummyIP2 = "93.00.33.33"
 
   override def newAppForTest(td: TestData): Application = new GuiceApplicationBuilder()
     .in(Environment.simple(mode = Mode.Test, path = new java.io.File(".")))
@@ -66,7 +66,7 @@ class FaststreamAllowlistFilterConfigSpec extends PlaySpec with GuiceOneAppPerTe
       }
 
       "coming from an IP NOT in the allow list and not with an allow listed path must be redirected" in {
-        val request = FakeRequest(GET, "/fset-video-interview-gateway/faststream/callback").withHeaders("True-Client-IP" -> dummyIP3)
+        val request = FakeRequest(GET, "/fset-video-interview-gateway/faststream/callback").withHeaders("True-Client-IP" -> dummyIP2)
         val Some(result) = route(app, request)
 
         status(result) mustBe SEE_OTHER
@@ -74,7 +74,7 @@ class FaststreamAllowlistFilterConfigSpec extends PlaySpec with GuiceOneAppPerTe
       }
 
       "coming from an IP NOT in the allow list, but with an allow listed path must work as normal" in {
-        val request = FakeRequest(GET, "/ping/ping").withHeaders("True-Client-IP" -> dummyIP3)
+        val request = FakeRequest(GET, "/ping/ping").withHeaders("True-Client-IP" -> dummyIP2)
         val Some(result) = route(app, request)
 
         status(result) mustBe OK
