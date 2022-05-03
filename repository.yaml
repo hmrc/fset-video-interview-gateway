@@ -1,12 +1,2 @@
 repoVisibility: public_0C3F0CE3E6E6448FAD341E7BFA50FCD333E06A20CFF05FCACE61154DDBBADF71
 digital-service: "FSET: Faststream"
-
-leakDetectionExemptions:
- - ruleId: 'ip_addresses1'
-   text: 'dummyIP1'
-   filePaths:
-      - '/test/uk/gov/hmrc/fsetlaunchpadgateway/config/FaststreamAllowlistFilterConfigSpec.scala'
- - ruleId: 'ip_addresses2'
-   text: 'dummyIP2'
-   filePaths:
-      - '/test/uk/gov/hmrc/fsetlaunchpadgateway/config/FaststreamAllowlistFilterConfigSpec.scala'
