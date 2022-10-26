@@ -51,7 +51,7 @@ abstract class Client(http: WSHttp, val path: String, config: FrontendAppConfig)
     val additionalQuestionKeys = mutable.ListBuffer[(String, String)]()
 
     val result = cc.getClass.getDeclaredFields.map(declaredField => declaredField.getName -> {
-      val nextVal = values.next
+      val nextVal = values.next()
       nextVal match {
         case Some(content) => content.toString
         case None =>
@@ -158,7 +158,7 @@ abstract class Client(http: WSHttp, val path: String, config: FrontendAppConfig)
   }
 
   private def convertQueryParamsForTx(queryParams: Seq[(String, String)]): Map[String, Seq[String]] =
-    queryParams.map {
+    queryParams.view.map {
       case (key, value) => key -> Seq(value)
-    }(collection.breakOut): Map[String, Seq[String]]
+    }.to(Map): Map[String, Seq[String]]
 }

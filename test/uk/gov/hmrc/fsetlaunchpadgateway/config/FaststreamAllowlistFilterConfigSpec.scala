@@ -38,7 +38,7 @@ class FaststreamAllowlistFilterConfigSpec extends PlaySpec with GuiceOneAppPerTe
       "whitelist" -> Base64.getEncoder.encodeToString(s"$dummyIP1".getBytes),
       "play.http.filters" -> "uk.gov.hmrc.fsetlaunchpadgateway.config.ProductionFaststreamFilters"
     ))
-    .build
+    .build()
 
   "FrontendAppConfig" must {
     "return a valid config item" when {

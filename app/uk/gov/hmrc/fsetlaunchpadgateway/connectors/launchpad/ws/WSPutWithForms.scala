@@ -17,7 +17,7 @@
 package uk.gov.hmrc.fsetlaunchpadgateway.connectors.launchpad.ws
 
 import play.api.http.HttpVerbs.{ PUT => PUT_VERB }
-import uk.gov.hmrc.http.hooks.HookData
+import uk.gov.hmrc.http.hooks.{ Data, HookData, RequestData, ResponseData }
 import uk.gov.hmrc.play.http.ws.{ WSHttpResponse, WSPut }
 
 import scala.concurrent.ExecutionContext
@@ -46,7 +46,7 @@ trait WSPutWithForms extends HttpPut with WSPut {
     val allHeaders = hc.headersForUrl(hcConfig)(url)
     withTracing(PUT_VERB, url) {
       val httpResponse = doFormPut(url, allHeaders, body)
-      executeHooks(PUT_VERB, new URL(url), allHeaders, Option(HookData.FromMap(body)), httpResponse)
+      executeHooks(PUT_VERB, new URL(url), RequestData(allHeaders, Option(Data.pure(HookData.FromMap(body)))), httpResponse.map(ResponseData.fromHttpResponse))
       mapErrors(PUT_VERB, url, httpResponse).map(rds.read(PUT_VERB, url, _))
     }
   }

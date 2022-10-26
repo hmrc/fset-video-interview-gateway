@@ -7,7 +7,7 @@ private object AppDependencies {
     ws,
     "uk.gov.hmrc"                   %% "bootstrap-backend-play-28"    % Versions.bootstrapVersion,
     "uk.gov.hmrc"                   %% "bootstrap-frontend-play-28"   % Versions.bootstrapVersion,
-    "com.typesafe.play"             %% "play-json-joda"               % "2.6.10",
+    "com.typesafe.play"             %% "play-json-joda"               % "2.9.2",
     "com.fasterxml.jackson.module"  %% "jackson-module-scala"         % "2.12.2"
   )
 
@@ -30,7 +30,7 @@ private object AppDependencies {
   }
 
   object Versions {
-    val bootstrapVersion = "5.24.0"
+    val bootstrapVersion = "7.8.0"
   }
 
   def apply(): Seq[ModuleID] = compile ++ Test()

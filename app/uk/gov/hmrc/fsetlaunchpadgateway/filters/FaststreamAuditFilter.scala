@@ -22,7 +22,7 @@ import play.api.Configuration
 import javax.inject.{ Inject, Singleton }
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.{ ControllerConfigs, HttpAuditEvent }
-import uk.gov.hmrc.play.bootstrap.frontend.filters.DefaultFrontendAuditFilter
+import uk.gov.hmrc.play.bootstrap.frontend.filters.{ DefaultFrontendAuditFilter, RequestHeaderAuditing }
 
 import scala.concurrent.ExecutionContext
 
@@ -32,8 +32,9 @@ class FaststreamAuditFilter @Inject() (
   val controllerConfigs: ControllerConfigs,
   override val auditConnector: AuditConnector,
   httpAuditEvent: HttpAuditEvent,
+  override val requestHeaderAuditing: RequestHeaderAuditing,
   override val mat: Materializer
 )(implicit ec: ExecutionContext)
-  extends DefaultFrontendAuditFilter(config, controllerConfigs, auditConnector, httpAuditEvent, mat) {
+  extends DefaultFrontendAuditFilter(config, controllerConfigs, auditConnector, httpAuditEvent, requestHeaderAuditing, mat) {
   override val maskedFormFields: Seq[String] = Seq("password")
 }
