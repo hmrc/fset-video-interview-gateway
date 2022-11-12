@@ -30,7 +30,7 @@ private object AppDependencies {
   }
 
   object Versions {
-    val bootstrapVersion = "7.8.0"
+    val bootstrapVersion = "7.11.0"
   }
 
   def apply(): Seq[ModuleID] = compile ++ Test()
