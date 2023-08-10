@@ -22,7 +22,6 @@ import akka.stream.Materializer
 import javax.inject.{ Inject, Singleton }
 import play.api.Configuration
 import play.api.mvc.{ Call, EssentialFilter, RequestHeader, Result }
-import uk.gov.hmrc.allowlist.AkamaiAllowlistFilter
 
 import scala.concurrent.Future
 

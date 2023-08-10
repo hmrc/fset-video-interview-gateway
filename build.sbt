@@ -7,7 +7,6 @@ import scalariform.formatter.preferences._
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings, targetJvm}
 import uk.gov.hmrc.{SbtAutoBuildPlugin, _}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
@@ -24,7 +23,6 @@ lazy val microservice = Project(appName, file("."))
   .settings(majorVersion := 0)
   .settings(playSettings : _*)
   .settings(scalaSettings: _*)
-  .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
   .settings(playDefaultPort := 9296)
   .settings(
@@ -39,6 +37,10 @@ lazy val microservice = Project(appName, file("."))
     // Currently don't enable warning in value discard in tests until ScalaTest 3
     Compile / compile / scalacOptions += "-Ywarn-value-discard"
   )
+  // Even though log4j does not appear in the dependency graph, sbt still downloads it into the Coursier cache
+  // when we compile. It is version log4j-1.2.17.jar, which contains the security vulnerabilities so as a workaround
+  // we exclude any log4j library here
+  .settings(excludeDependencies += "log4j" % "log4j")
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(sbt.Defaults.testSettings) : _*)
   .settings(ScalariformKeys.preferences := ScalariformKeys.preferences.value
